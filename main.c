@@ -65,10 +65,13 @@ void mustrarParques(){
  * Verifica se o parque pode ser adicionado.
  * @param nome vetor com os caracteres do nome
  * @param cap capacidade do parque
- * @param val_15 valores a pagar pelo parque
+ * @param val_15 valores a pagar pelo parque na primeira hora
+ * @param val_1h valores a pagar pelo parque depois da primeira hora
+ * @param val_max valore maximo diario
+ * @param lista_parques vetor para a lista dos parques
  * @return inteiro 1 caso verifique, 0 caso falhe
  */
-int verificaParque(char nome[NOME], int cap, float val_15, float val_1h, float val_max, Parque *lista_parques) {
+int verificaParque(char nome[NOME], int cap, float val_15, float val_1h, float val_max, Parque *lista_parques){
     int i = 0;
     Parque *aux = lista_parques;
     while (aux != NULL) {
@@ -98,14 +101,18 @@ int verificaParque(char nome[NOME], int cap, float val_15, float val_1h, float v
  * Cria um parque e coloca-o na lista.
  * @param nome vetor com os caracteres do nome
  * @param cap capacidade do parque
+ * @param val_15 valores a pagar pelo parque na primeira hora
+ * @param val_1h valores a pagar pelo parque depois da primeira hora
+ * @param val_max valore maximo diario
+ * @param lista_parques vetor para a lista dos parques
  * @param val_15 valores a pagar pelo parque
  */
-void criaParque(char nome[NOME], int cap, float val_15, float val_1h, float val_max, Parque **lista_parques) {
+void criaParque(char nome[NOME], int cap, float val_15, float val_1h, float val_max, Parque **lista_parques){
     int verifica;
     char *nome_novo;
     Parque *parque_novo = (Parque *) malloc(sizeof(Parque)), *aux;
 
-    verifica = verificaParque(nome, cap, val_15, val_1h, val_max, *lista_parques);
+    verifica = verificaParque(nome,cap,val_15,val_1h,val_max,*lista_parques);
     nome_novo = criaNome(nome);
     if (verifica) {
         parque_novo->nome = nome_novo;
@@ -142,7 +149,7 @@ void leArgumentosParque(){
         ungetc(c, stdin);
         if((c = getchar()) == '"'){
             ungetc(c, stdin);
-            scanf("\"%[^\"]\"%d%f%f%f", nome, &cap, &val_15, &val_1h, &val_max);
+            scanf("\"%[^\"]\"%d%f%f%f",nome, &cap, &val_15, &val_1h, &val_max);
         }else{
             ungetc(c, stdin);
             scanf("%s%d%f%f%f", nome, &cap, &val_15, &val_1h, &val_max);
