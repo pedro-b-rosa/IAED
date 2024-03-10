@@ -25,8 +25,6 @@ typedef struct {
 typedef struct Carro{
     char matricula[9]; // AA-00-AA\0
     Data data_entra;
-    Data data_saida;
-    float total_cost;
     struct Carro *prox;
 } Carro;
 
@@ -170,6 +168,18 @@ void leArgumentosParque(){
 */
 
 /**
+    Atualiza a ultima data usada
+    @param data a data de entrada
+*/
+void atualizarData(Data data){
+    ult_data.minuto = data.minuto;
+    ult_data.hora = data.hora;
+    ult_data.dia = data.dia;
+    ult_data.mes = data.mes;
+    ult_data.ano = data.ano;
+}
+
+/**
     verifica se pode adicionar o carro
     @param matricula do carro
     @return inteiro 1 caso a matricula seja válida 0 caso falhe
@@ -281,7 +291,7 @@ int podeAdicionarCarro(char nome_par[NOME], char matricula[9], Data data, Parque
         printf("%s: invalid licence plate.\n", matricula);
         return FALSE;
     }
-    if (!(carroNumParque(lista_parques, matricula))){
+    if (carroNumParque(lista_parques, matricula)){
         printf("%s: invalid vehicle entry.\n", matricula);
         return FALSE;
     }
@@ -289,6 +299,7 @@ int podeAdicionarCarro(char nome_par[NOME], char matricula[9], Data data, Parque
         printf("invalid date.\n");
         return FALSE;
     }
+    atualizarData(data);
     return TRUE;
 }
 
@@ -304,7 +315,7 @@ void adicionaCarro(char nome_par[NOME], char matricula[9], Data data){
     n = podeAdicionarCarro(nome_par, matricula, data, lista_parques);
 
     if (n){
-        printf("deu");
+        
     }
 }
 
