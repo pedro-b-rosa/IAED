@@ -304,6 +304,28 @@ int podeAdicionarCarro(char nome_par[NOME], char matricula[9], Data data, Parque
 }
 
 /**
+    adiciona um carro ah lista de carros do parque
+    @param nome_par nome do parque
+    @param matricula do carro
+    @param data a data de entrada
+*/
+void adicionaListaCarros(char nome_par[NOME], char matricula[9], Data data, Parque *lista_parques){
+    Parque *aux = lista_parques;
+    Carro *aux_carro = aux->carros, *carro_novo = (Carro *) malloc(sizeof(Carro));
+
+    while (TRUE) {
+        if (strcmp(aux->nome, nome_par) == 0) {
+            break;
+        }
+        aux = aux->prox;
+    }
+    aux->livres--;
+    printf("%s %s", aux->nome, aux->livres);
+
+    //fazer a logica para colucar no sitio certo da lista
+}
+
+/**
     adiciona um carro ao parque caso não acha erros
     @param nome_par nome do parque
     @param matricula do carro
