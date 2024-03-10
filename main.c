@@ -311,7 +311,7 @@ int podeAdicionarCarro(char nome_par[NOME], char matricula[9], Data data, Parque
 */
 void adicionaListaCarros(char nome_par[NOME], char matricula[9], Data data, Parque *lista_parques){
     Parque *aux = lista_parques;
-    Carro *aux_carro = aux->carros, *carro_novo = (Carro *) malloc(sizeof(Carro));
+    Carro *aux_carro = aux->carros, *aux2_carro, *carro_novo = (Carro *) malloc(sizeof(Carro));
 
     while (TRUE) {
         if (strcmp(aux->nome, nome_par) == 0) {
@@ -320,9 +320,20 @@ void adicionaListaCarros(char nome_par[NOME], char matricula[9], Data data, Parq
         aux = aux->prox;
     }
     aux->livres--;
-    printf("%s %s", aux->nome, aux->livres);
+    printf("%s %d\n", aux->nome, aux->livres);
 
-    //fazer a logica para colucar no sitio certo da lista
+    strcpy(carro_novo->matricula,matricula);
+    carro_novo->data_entra = data;
+    if (aux_carro == NULL){
+        aux_carro = carro_novo;
+    } else {
+        while(strcmp(aux_carro->matricula, matricula) < 0){
+            aux2_carro = aux_carro;
+            aux_carro = aux_carro->prox;
+            carro_novo->prox = aux_carro;
+            aux2_carro->prox = carro_novo;
+        }
+    }
 }
 
 /**
@@ -337,7 +348,7 @@ void adicionaCarro(char nome_par[NOME], char matricula[9], Data data){
     n = podeAdicionarCarro(nome_par, matricula, data, lista_parques);
 
     if (n){
-        
+        adicionaListaCarros(nome_par, matricula, data, lista_parques);
     }
 }
 
