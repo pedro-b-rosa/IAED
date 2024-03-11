@@ -330,9 +330,9 @@ void adicionaListaCarros(char nome_par[NOME], char matricula[9], Data data, Parq
         while(strcmp(aux_carro->matricula, matricula) < 0){
             aux2_carro = aux_carro;
             aux_carro = aux_carro->prox;
-            carro_novo->prox = aux_carro;
-            aux2_carro->prox = carro_novo;
         }
+        carro_novo->prox = aux_carro;
+        aux2_carro->prox = carro_novo;
     }
 }
 
