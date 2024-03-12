@@ -25,6 +25,7 @@ typedef struct {
 typedef struct Carro{
     char matricula[9]; // AA-00-AA\0
     Data data_entra;
+    Data data_saida;
     struct Carro *prox;
 } Carro;
 
@@ -71,10 +72,9 @@ void mustrarParques(){
     @param val_15 valores a pagar pelo parque na primeira hora
     @param val_1h valores a pagar pelo parque depois da primeira hora
     @param val_max valore maximo diario
-    @param lista_parques vetor para a lista dos parques
     @return inteiro 1 caso verifique, 0 caso falhe
  */
-int verificaParque(char nome[NOME], int cap, float val_15, float val_1h, float val_max, Parque *lista_parques){
+int verificaParque(char nome[NOME], int cap, float val_15, float val_1h, float val_max){
     int i = 0;
     Parque *aux = lista_parques;
     while (aux != NULL) {
@@ -110,12 +110,12 @@ int verificaParque(char nome[NOME], int cap, float val_15, float val_1h, float v
     @param lista_parques vetor para a lista dos parques
     @param val_15 valores a pagar pelo parque
  */
-void criaParque(char nome[NOME], int cap, float val_15, float val_1h, float val_max, Parque **lista_parques){
+void criaParque(char nome[NOME], int cap, float val_15, float val_1h, float val_max){
     int verifica;
     char *nome_novo;
     Parque *parque_novo = (Parque *) malloc(sizeof(Parque)), *aux;
 
-    verifica = verificaParque(nome,cap,val_15,val_1h,val_max,*lista_parques);
+    verifica = verificaParque(nome,cap,val_15,val_1h,val_max);
     nome_novo = criaNome(nome);
     if (verifica) {
         parque_novo->nome = nome_novo;
@@ -126,10 +126,10 @@ void criaParque(char nome[NOME], int cap, float val_15, float val_1h, float val_
         parque_novo->valor_max = val_max;
         parque_novo->prox = NULL;
 
-        if (*lista_parques == NULL) {
-            *lista_parques = parque_novo;
+        if (lista_parques == NULL) {
+            lista_parques = parque_novo;
         } else {
-            aux = *lista_parques;
+            aux = lista_parques;
             while (aux->prox != NULL) {
                 aux = aux->prox;
             }
@@ -157,7 +157,7 @@ void leArgumentosParque(){
             ungetc(c, stdin);
             scanf("%s%d%f%f%f", nome, &cap, &val_15, &val_1h, &val_max);
         }
-        criaParque(nome, cap, val_15, val_1h, val_max, &lista_parques);
+        criaParque(nome, cap, val_15, val_1h, val_max);
     }else{
         mustrarParques();
     }
@@ -217,10 +217,9 @@ int matriculaValida(char matricula[9]){
 /**
     verifica se o carro ja está em algum parque
     @param matricula do carro
-    @param lista_parques vetor para a lista dos parques
     @return inteiro 1 caso a matricula seja válida 0 caso falhe
 */
-int carroNumParque(Parque *lista_parques,char *matricula){
+int carroNumParque(char *matricula){
     Parque *aux = lista_parques;
     Carro *aux_carro = aux->carros;
 
@@ -265,10 +264,9 @@ int dataValida(Data data, Data ult_data){
     @param nome_par nome do parque
     @param matricula do carro
     @param data a data de entrada
-    @param lista_parques vetor para a lista dos parques
     @return inteiro TRUE caso passe nos criterios ou FALSE caso nao passe
 */
-int podeAdicionarCarro(char nome_par[NOME], char matricula[9], Data data, Parque *lista_parques){
+int podeAdicionarCarro(char nome_par[NOME], char matricula[9], Data data){
     int i = TRUE;
     Parque *aux = lista_parques;
 
@@ -291,7 +289,7 @@ int podeAdicionarCarro(char nome_par[NOME], char matricula[9], Data data, Parque
         printf("%s: invalid licence plate.\n", matricula);
         return FALSE;
     }
-    if (carroNumParque(lista_parques, matricula)){
+    if (carroNumParque(matricula)){
         printf("%s: invalid vehicle entry.\n", matricula);
         return FALSE;
     }
@@ -309,7 +307,7 @@ int podeAdicionarCarro(char nome_par[NOME], char matricula[9], Data data, Parque
     @param matricula do carro
     @param data a data de entrada
 */
-void adicionaListaCarros(char nome_par[NOME], char matricula[9], Data data, Parque *lista_parques){
+void adicionaListaCarros(char nome_par[NOME], char matricula[9], Data data){
     Parque *aux = lista_parques;
     Carro *aux_carro = aux->carros, *aux2_carro, *carro_novo = (Carro *) malloc(sizeof(Carro));
 
@@ -324,6 +322,7 @@ void adicionaListaCarros(char nome_par[NOME], char matricula[9], Data data, Parq
 
     strcpy(carro_novo->matricula,matricula);
     carro_novo->data_entra = data;
+    carro_novo->data_saida.ano = 0;
     if (aux_carro == NULL){
         aux_carro = carro_novo;
     } else {
@@ -345,10 +344,10 @@ void adicionaListaCarros(char nome_par[NOME], char matricula[9], Data data, Parq
 void adicionaCarro(char nome_par[NOME], char matricula[9], Data data){
     int n;
 
-    n = podeAdicionarCarro(nome_par, matricula, data, lista_parques);
+    n = podeAdicionarCarro(nome_par, matricula, data);
 
     if (n){
-        adicionaListaCarros(nome_par, matricula, data, lista_parques);
+        adicionaListaCarros(nome_par, matricula, data);
     }
 }
 
