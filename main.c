@@ -24,8 +24,9 @@ typedef struct {
 
 typedef struct Carro{
     char matricula[9]; // AA-00-AA\0
-    Data data_entra;
-    Data data_saida;
+    Data data_e;
+    Data data_s;
+    float valor_pago;
     struct Carro *prox;
 } Carro;
 
@@ -41,6 +42,7 @@ typedef struct Parque{
 } Parque;
 
 Parque *lista_parques = NULL;
+int num_parques = 0;
 Data ult_data;
 
 /**
@@ -52,6 +54,24 @@ char* criaNome(char vetor[NOME]) {
     char* vetor_novo = (char*) malloc(strlen(vetor) + 1);
     strcpy(vetor_novo, vetor);
     return vetor_novo;
+}
+
+/**
+    procura se o parque existe
+    @param vetor do nome para ser transformado
+    @return ponteiro para o parque ou NULL caso não exista
+*/
+Parque* parqueExiste(char nome[NOME]){
+    Parque *aux = lista_parques;
+
+    while (aux != NULL) {
+        if (strcmp(aux->nome, nome) == 0) {
+            return aux;
+            break;
+        }
+        aux = aux->prox;
+    }
+    return NULL;
 }
 
 /**
@@ -75,15 +95,9 @@ void mustrarParques(){
     @return inteiro 1 caso verifique, 0 caso falhe
  */
 int verificaParque(char nome[NOME], int cap, float val_15, float val_1h, float val_max){
-    int i = 0;
-    Parque *aux = lista_parques;
-    while (aux != NULL) {
-        if (strcmp(aux->nome, nome) == 0) {
-            printf("%s: parking already exists.\n", nome);
-            return FALSE;
-        }
-        aux = aux->prox;
-        i++;
+    if(parqueExiste(nome) != NULL){
+        printf("%s: parking already exists.\n", nome);
+        return FALSE;
     }
     if (cap <= 0) {
         printf("%d: invalid capacity.\n",cap);
@@ -93,7 +107,7 @@ int verificaParque(char nome[NOME], int cap, float val_15, float val_1h, float v
         printf("invalid cost.\n");
         return FALSE;
     }
-    if (i >= MAXPARQUES) {
+    if (num_parques >= MAXPARQUES) {
         printf("too many parks.\n");
         return FALSE;
     }
@@ -135,6 +149,7 @@ void criaParque(char nome[NOME], int cap, float val_15, float val_1h, float val_
             }
             aux->prox = parque_novo;
         }
+        num_parques++;
     } else {
         free(parque_novo);
     }
@@ -216,20 +231,17 @@ int matriculaValida(char matricula[9]){
 
 /**
     verifica se o carro ja está em algum parque
-    @param matricula do carro
+    @param matr matricula do carro
     @return inteiro 1 caso a matricula seja válida 0 caso falhe
 */
-int carroNumParque(char *matricula){
+int carroNumParque(char *matr){
     Parque *aux = lista_parques;
     Carro *aux_carro = aux->carros;
 
     while (aux != NULL) {
         while (aux_carro != NULL) {
-            if (strcmp(aux_carro->matricula, matricula) == 0) {
+            if(strcmp(aux_carro->matricula, matr)==0 && aux_carro->data_s.ano==0){
                 return TRUE;
-            }
-            if (strcmp(aux_carro->matricula, matricula) > 0) {
-                break;
             }
             aux_carro = aux_carro->prox;
         }
@@ -267,17 +279,10 @@ int dataValida(Data data, Data ult_data){
     @return inteiro TRUE caso passe nos criterios ou FALSE caso nao passe
 */
 int podeAdicionarCarro(char nome_par[NOME], char matricula[9], Data data){
-    int i = TRUE;
     Parque *aux = lista_parques;
 
-    while (aux != NULL) {
-        if (strcmp(aux->nome, nome_par) == 0) {
-            i = FALSE;
-            break;
-        }
-        aux = aux->prox;
-    }
-    if (i){
+    aux = parqueExiste(nome_par);
+    if (aux == NULL){
         printf("%s: no such parking.\n", nome_par);
         return FALSE;
     }
@@ -309,7 +314,7 @@ int podeAdicionarCarro(char nome_par[NOME], char matricula[9], Data data){
 */
 void adicionaListaCarros(char nome_par[NOME], char matricula[9], Data data){
     Parque *aux = lista_parques;
-    Carro *aux_carro = aux->carros, *aux2_carro, *carro_novo = (Carro *) malloc(sizeof(Carro));
+    Carro *aux_carro = aux->carros, *carro_novo = (Carro *) malloc(sizeof(Carro));
 
     while (TRUE) {
         if (strcmp(aux->nome, nome_par) == 0) {
@@ -321,17 +326,20 @@ void adicionaListaCarros(char nome_par[NOME], char matricula[9], Data data){
     printf("%s %d\n", aux->nome, aux->livres);
 
     strcpy(carro_novo->matricula,matricula);
-    carro_novo->data_entra = data;
-    carro_novo->data_saida.ano = 0;
+    carro_novo->data_e.ano = data.ano;
+    carro_novo->data_e.mes = data.mes;
+    carro_novo->data_e.dia = data.dia;
+    carro_novo->data_e.hora = data.hora;
+    carro_novo->data_e.minuto = data.minuto;
+    carro_novo->data_s.ano = 0;
+    carro_novo->valor_pago = 0;
     if (aux_carro == NULL){
         aux_carro = carro_novo;
     } else {
-        while(strcmp(aux_carro->matricula, matricula) < 0){
-            aux2_carro = aux_carro;
+        while(aux_carro != NULL){
             aux_carro = aux_carro->prox;
         }
-        carro_novo->prox = aux_carro;
-        aux2_carro->prox = carro_novo;
+        aux_carro->prox = carro_novo;
     }
 }
 
