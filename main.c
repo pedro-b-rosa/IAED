@@ -24,26 +24,26 @@ typedef struct {
 
 typedef struct Carro{
     char matricula[9]; // AA-00-AA\0
-    Data data_e;
-    Data data_s;
-    float valor_pago;
-    struct Carro *prox;
+    Data data_e; // data de entrada
+    Data data_s; // data de saida
+    float valor_pago; // valor pago
+    struct Carro *prox; // ponteiro para o proximo carro
 } Carro;
 
 typedef struct Parque{
-    char* nome;
-    int cap;
-    int livres;
-    float valor_15;
-    float valor_1hora;
-    float valor_max;
-    Carro *carros;
-    struct Parque *prox;
+    char* nome; // nome do parque
+    int cap; // capacidade do parque
+    int livres; // lugares livres
+    float valor_15; // valor a pagar pelo parque na primeira hora por 15 min
+    float valor_1hora; // valor a pagar depois da primeira hora por 15 min
+    float valor_max; // valor maximo diario
+    Carro *carros; // lista de carros
+    struct Parque *prox; // ponteiro para o proximo parque
 } Parque;
 
-Parque *lista_parques = NULL;
-int num_parques = 0;
-Data ult_data;
+Parque *lista_parques = NULL; // ponteir para lista de parques
+int num_parques = 0; // numero de parques criados
+Data ult_data; // ultima data usada
 
 /**
     cria vetor para nome com o minimo de memoria
@@ -139,6 +139,7 @@ void criaParque(char nome[NOME], int cap, float val_15, float val_1h, float val_
         parque_novo->valor_1hora = val_1h;
         parque_novo->valor_max = val_max;
         parque_novo->prox = NULL;
+        parque_novo->carros = NULL;
 
         if (lista_parques == NULL) {
             lista_parques = parque_novo;
@@ -162,6 +163,7 @@ void leArgumentosParque(){
     char nome[NOME], c;
     int cap;
     float val_15, val_1h, val_max;
+
     if ((c = getchar()) != '\n'){
         while ((c = getchar()) == ' ');
         ungetc(c, stdin);
@@ -179,7 +181,7 @@ void leArgumentosParque(){
 }
 
 /**
-    segunda implementação______________________________________________________________
+    segunda implementação___________________________________________________________________________________
 */
 
 /**
@@ -236,9 +238,10 @@ int matriculaValida(char matricula[9]){
 */
 int carroNumParque(char *matr){
     Parque *aux = lista_parques;
-    Carro *aux_carro = aux->carros;
+    Carro *aux_carro;
 
     while (aux != NULL) {
+        aux_carro = aux->carros;
         while (aux_carro != NULL) {
             if(strcmp(aux_carro->matricula, matr)==0 && aux_carro->data_s.ano==0){
                 return TRUE;
@@ -251,7 +254,7 @@ int carroNumParque(char *matr){
 }
 
 /**
-    verifica se a data e valida
+    verifica se a data e maior que a ultima data
     @param data a data de entrada
     @param ult_data ultima data que foi inserida
     @return inteiro TRUE caso passe nos criterios ou FALSE caso nao passe
@@ -298,7 +301,7 @@ int podeAdicionarCarro(char nome_par[NOME], char matricula[9], Data data){
         printf("%s: invalid vehicle entry.\n", matricula);
         return FALSE;
     }
-    if (!(dataValida(data, ult_data))){
+    if (!(dataValida(data, ult_data))){ 
         printf("invalid date.\n");
         return FALSE;
     }
@@ -314,14 +317,10 @@ int podeAdicionarCarro(char nome_par[NOME], char matricula[9], Data data){
 */
 void adicionaListaCarros(char nome_par[NOME], char matricula[9], Data data){
     Parque *aux = lista_parques;
-    Carro *aux_carro = aux->carros, *carro_novo = (Carro *) malloc(sizeof(Carro));
+    Carro *aux_carro,*carro_novo = (Carro*)malloc(sizeof(Carro));
 
-    while (TRUE) {
-        if (strcmp(aux->nome, nome_par) == 0) {
-            break;
-        }
-        aux = aux->prox;
-    }
+    aux = parqueExiste(nome_par);
+    aux_carro = aux->carros;
     aux->livres--;
     printf("%s %d\n", aux->nome, aux->livres);
 
@@ -333,29 +332,14 @@ void adicionaListaCarros(char nome_par[NOME], char matricula[9], Data data){
     carro_novo->data_e.minuto = data.minuto;
     carro_novo->data_s.ano = 0;
     carro_novo->valor_pago = 0;
+    carro_novo->prox = NULL;
     if (aux_carro == NULL){
-        aux_carro = carro_novo;
+        aux->carros = carro_novo;
     } else {
-        while(aux_carro != NULL){
+        while(aux_carro->prox != NULL){
             aux_carro = aux_carro->prox;
         }
         aux_carro->prox = carro_novo;
-    }
-}
-
-/**
-    adiciona um carro ao parque caso não acha erros
-    @param nome_par nome do parque
-    @param matricula do carro
-    @param data a data de entrada
-*/
-void adicionaCarro(char nome_par[NOME], char matricula[9], Data data){
-    int n;
-
-    n = podeAdicionarCarro(nome_par, matricula, data);
-
-    if (n){
-        adicionaListaCarros(nome_par, matricula, data);
     }
 }
 
@@ -364,7 +348,7 @@ void adicionaCarro(char nome_par[NOME], char matricula[9], Data data){
 */
 void leArgumentosEntrada(){
     char nome_par[NOME], c, matricula[9];
-    Data data;
+    Data d; // data de entrada
 
     while ((c = getchar()) == ' ');
     ungetc(c, stdin);
@@ -375,8 +359,160 @@ void leArgumentosEntrada(){
         ungetc(c, stdin);
         scanf("%s%s", nome_par, matricula);
     }
-    scanf("%d-%d-%d %d:%d",&data.dia,&data.mes,&data.ano,&data.hora,&data.minuto);
-    adicionaCarro(nome_par, matricula, data);
+    scanf("%d-%d-%d %d:%d",&d.dia,&d.mes,&d.ano,&d.hora,&d.minuto);
+
+    if (podeAdicionarCarro(nome_par, matricula, d)){
+        adicionaListaCarros(nome_par, matricula, d);
+    }
+}
+
+/**
+    terceira implementação____________________________________________________________________________________
+*/
+
+/**
+    verifica se pode adicionar o carro
+    @param nome_par nome do parque
+    @param matricula do carro
+    @param data a data de entrada
+    @return inteiro TRUE caso passe nos criterios ou FALSE caso nao passe
+*/
+int podeRegistarSaida(char nome_par[NOME], char matricula[9], Data data){
+    Parque *aux = lista_parques;
+
+    aux = parqueExiste(nome_par);
+    if (aux == NULL){
+        printf("%s: no such parking.\n", nome_par);
+        return FALSE;
+    }
+    if (!(matriculaValida(matricula))){
+        printf("%s: invalid licence plate.\n", matricula);
+        return FALSE;
+    }
+    if (!(carroNumParque(matricula))){
+        printf("%s: invalid vehicle exit.\n", matricula);
+        return FALSE;
+    }
+    if (!(dataValida(data, ult_data))){ 
+        printf("invalid date.\n");
+        return FALSE;
+    }
+    atualizarData(data);
+    return TRUE;
+}
+
+/**
+    Calcula o numero de minutos entre duas datas
+    @param data_e a data de entrada
+    @param data_s a data de saida
+    @return o numero de minutos entre as duas datas
+*/
+long int minutosEntreDatas(Data data_e, Data data_s){
+    int dias_mes[13] = {0 ,31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+    long int t = 0, conta = 0;
+
+    while(data_e.dia != data_s.dia || data_e.mes != data_s.mes || data_e.ano != data_s.ano){
+        conta++;
+        data_e.dia++;
+
+        if(data_e.dia > dias_mes[data_e.mes]){
+            data_e.dia = 1;
+            data_e.mes++;
+            if (data_e.mes > 12){
+                data_e.mes = 1;
+                data_e.ano++;
+            }
+        }
+    }
+    t += conta*24*60+(data_s.hora-data_e.hora)*60+data_s.minuto-data_e.minuto;
+
+    return t;
+}
+
+/**
+    Calcula o valor a pagar pelo carro
+    @param minutos numero de minutos que o carro esteve no parque
+    @param v_15 valor a pagar pelo parque na primeira hora
+    @param v_1hora valor a pagar depois da primeira hora
+    @param v_max valor maximo diario
+    @return o valor a pagar pelo carro
+*/
+float valorAPagar(long int minutos, float v_15, float v_1hora, float v_max){
+    float valor = 0;
+    int dias = minutos/(24*60);
+    int minutosResto = minutos%(24*60);
+
+    valor = dias*v_max;
+    if (minutosResto <= 60){
+        valor += v_15*(minutosResto/15);
+    }else{
+        valor += v_15*4;
+        minutosResto -= 60;
+        valor += v_1hora*(minutosResto/15);
+    }
+
+    return valor;
+}
+
+/**
+    Regista a saida do carro pondo a data de saida e valor pago
+    @param nome_par nome do parque
+    @param matricula do carro
+    @param data a data de saida
+*/
+void RegistaSaida(char nome_par[NOME], char matricula[9], Data data){
+    Parque *aux = lista_parques;
+    Carro *aux_carro;
+    float valor_pago;
+    long int min;
+
+    aux = parqueExiste(nome_par);
+    aux_carro = aux->carros;
+    while (aux_carro != NULL) {
+        if(strcmp(aux_carro->matricula, matricula)==0 && aux_carro->data_s.ano==0){
+            break;
+        }
+        aux_carro = aux_carro->prox;
+    }
+    aux->livres++;
+
+    aux_carro->data_s.ano = data.ano;
+    aux_carro->data_s.mes = data.mes;
+    aux_carro->data_s.dia = data.dia;
+    aux_carro->data_s.hora = data.hora;
+    aux_carro->data_s.minuto = data.minuto;
+    min = minutosEntreDatas(aux_carro->data_e, aux_carro->data_s);
+    valor_pago=valorAPagar(min,aux->valor_15,aux->valor_1hora,aux->valor_max);
+    aux_carro->valor_pago = valor_pago;
+
+    printf("%s ", aux_carro->matricula);
+    printf("%02d-%02d-%d ", aux_carro->data_e.dia, aux_carro->data_e.mes, aux_carro->data_e.ano);
+    printf("%02d:%02d ", aux_carro->data_e.hora, aux_carro->data_e.minuto);
+    printf("%02d-%02d-%d ", aux_carro->data_s.dia, aux_carro->data_s.mes, aux_carro->data_s.ano);
+    printf("%02d:%02d ", aux_carro->data_s.hora, aux_carro->data_s.minuto);
+    printf("%.2f\n", valor_pago);
+}
+
+/**
+    Le o input do utilizador para o comando s
+*/
+void leArgumentosSaida(){
+    char nome_par[NOME], c, matricula[9];
+    Data d; // data de saida
+
+    while ((c = getchar()) == ' ');
+    ungetc(c, stdin);
+    if((c = getchar()) == '"'){
+        ungetc(c, stdin);
+        scanf("\"%[^\"]\"%s", nome_par, matricula);
+    }else{
+        ungetc(c, stdin);
+        scanf("%s%s", nome_par, matricula);
+    }
+    scanf("%d-%d-%d %d:%d",&d.dia,&d.mes,&d.ano,&d.hora,&d.minuto);
+    if (podeRegistarSaida(nome_par, matricula, d)){
+        RegistaSaida(nome_par, matricula, d);
+    }
 }
 
 /**
@@ -396,6 +532,7 @@ int main(){
             leArgumentosEntrada();
             break;
             case 's':
+            leArgumentosSaida();
             break;
             case 'v':
             break;
