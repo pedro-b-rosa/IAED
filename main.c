@@ -22,6 +22,12 @@ typedef struct {
     int minuto;
 } Data;
 
+typedef struct Historico{
+    Data data;
+    float valor;
+    struct Historico *prox;
+} Historico;
+
 typedef struct Carro{
     char matricula[9]; // AA-00-AA\0
     Data data_e; // data de entrada
@@ -39,6 +45,8 @@ typedef struct Parque{
     float valor_max; // valor maximo diario
     Carro *carros; // lista de carros
     Carro *ultimo_carro; // ponteiro para o ultimo carro
+    Historico *historico; // historico de faturacao
+    Historico *ultimo_historico; // ponteiro para o ultimo historico
     struct Parque *prox; // ponteiro para o proximo parque
 } Parque;
 
@@ -143,6 +151,8 @@ void criaParque(char nome[NOME], int cap, float val_15, float val_1h, float val_
         parque_novo->prox = NULL;
         parque_novo->carros = NULL;
         parque_novo->ultimo_carro = NULL;
+        parque_novo->historico = NULL;
+        parque_novo->ultimo_historico = NULL;
 
         if (lista_parques == NULL) {
             lista_parques = parque_novo;
@@ -462,6 +472,52 @@ float valorAPagar(long int minutos, float v_15, float v_1hora, float v_max){
 }
 
 /**
+    verifica se a data de d1 é igual a de d2
+    @param d1 data 1
+    @param d2 data 2
+    @return inteiro TRUE caso a data de d1 seja igual a de d2 
+    ou FALSE caso contrario
+*/
+int dataIgual(Data d1, Data d2){
+    if(d1.ano == d2.ano && d1.mes == d2.mes && d1.dia == d2.dia)
+        return TRUE;
+    else
+        return FALSE;
+}
+
+/**
+    adiciona um historico ah lista de historico do parque
+    @param aux parque
+    @param data a data de entrada
+    @param valor valor a pagar
+*/
+void adicionaHistorico(Parque *aux, Data data, float valor){
+    Historico *historico_novo;
+
+    if(aux->historico == NULL){
+        historico_novo = (Historico*)malloc(sizeof(Historico));
+        historico_novo->data.ano = data.ano;
+        historico_novo->data.mes = data.mes;
+        historico_novo->data.dia = data.dia;
+        historico_novo->valor = valor;
+        historico_novo->prox = NULL;
+        aux->historico = historico_novo;
+        aux->ultimo_historico = historico_novo;
+    } else if(dataIgual(aux->ultimo_historico->data, data)){
+        aux->ultimo_historico->valor += valor;
+    } else {
+        historico_novo = (Historico*)malloc(sizeof(Historico));
+        historico_novo->data.ano = data.ano;
+        historico_novo->data.mes = data.mes;
+        historico_novo->data.dia = data.dia;
+        historico_novo->valor = valor;
+        historico_novo->prox = NULL;
+        aux->ultimo_historico->prox = historico_novo;
+        aux->ultimo_historico = historico_novo;
+    }
+}
+
+/**
     Regista a saida do carro pondo a data de saida e valor pago
     @param nome_par nome do parque
     @param matricula do carro
@@ -491,6 +547,7 @@ void RegistaSaida(char nome_par[NOME], char matricula[9], Data data){
     min = minutosEntreDatas(aux_carro->data_e, aux_carro->data_s);
     valor_pago=valorAPagar(min,aux->valor_15,aux->valor_1hora,aux->valor_max);
     aux_carro->valor_pago = valor_pago;
+    adicionaHistorico(aux, aux_carro->data_s, valor_pago);
 
     printf("%s ", aux_carro->matricula);
     printf("%02d-%02d-%d ", aux_carro->data_e.dia, aux_carro->data_e.mes, aux_carro->data_e.ano);
@@ -589,20 +646,6 @@ int validarDataAnterior(Data data){
     else if (data.dia != ult_data.dia)
         n = (data.dia <= ult_data.dia) ? TRUE : FALSE;
     return n;
-}
-
-/**
-    verifica se a data de d1 é igual a de d2
-    @param d1 data 1
-    @param d2 data 2
-    @return inteiro TRUE caso a data de d1 seja igual a de d2 
-    ou FALSE caso contrario
-*/
-int dataIgual(Data d1, Data d2){
-    if(d1.ano == d2.ano && d1.mes == d2.mes && d1.dia == d2.dia)
-        return TRUE;
-    else
-        return FALSE;
 }
 
 /**
@@ -720,6 +763,29 @@ void mustrarFaturaCarros(char nome_par[NOME], Data data){
 }
 
 /**
+    mostra o historico se não der erro
+    @param matricula do carro
+    @param data a data a consultar
+*/
+void mustrarHistorico(char nome_par[NOME]){
+    Parque *aux = lista_parques;
+    Historico *aux_historico;
+
+    aux = parqueExiste(nome_par);
+    if (aux == NULL){
+        printf("%s: no such parking.\n", nome_par);
+    }else{
+        aux_historico = aux->historico;
+        while (aux_historico != NULL) {
+            printf("%02d-", aux_historico->data.dia);
+            printf("%02d-%d ", aux_historico->data.mes, aux_historico->data.ano);
+            printf("%.2f\n", aux_historico->valor);
+            aux_historico = aux_historico->prox;
+        }
+    }
+}
+
+/**
     Le o input do utilizador para o comando f
 */
 void leArgumentosFaturacao(){
@@ -739,7 +805,7 @@ void leArgumentosFaturacao(){
         scanf("%d-%d-%d",&d.dia,&d.mes,&d.ano);
         mustrarFaturaCarros(nome_par, d);
     }else{
-        // mostrar faturacao do parque pelas datas
+        mustrarHistorico(nome_par);
     }
 }
 
