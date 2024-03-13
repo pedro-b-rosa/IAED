@@ -38,6 +38,7 @@ typedef struct Parque{
     float valor_1hora; // valor a pagar depois da primeira hora por 15 min
     float valor_max; // valor maximo diario
     Carro *carros; // lista de carros
+    Carro *ultimo_carro; // ponteiro para o ultimo carro
     struct Parque *prox; // ponteiro para o proximo parque
 } Parque;
 
@@ -140,6 +141,7 @@ void criaParque(char nome[NOME], int cap, float val_15, float val_1h, float val_
         parque_novo->valor_max = val_max;
         parque_novo->prox = NULL;
         parque_novo->carros = NULL;
+        parque_novo->ultimo_carro = NULL;
 
         if (lista_parques == NULL) {
             lista_parques = parque_novo;
@@ -317,10 +319,9 @@ int podeAdicionarCarro(char nome_par[NOME], char matricula[9], Data data){
 */
 void adicionaListaCarros(char nome_par[NOME], char matricula[9], Data data){
     Parque *aux = lista_parques;
-    Carro *aux_carro,*carro_novo = (Carro*)malloc(sizeof(Carro));
+    Carro *carro_novo = (Carro*)malloc(sizeof(Carro));
 
     aux = parqueExiste(nome_par);
-    aux_carro = aux->carros;
     aux->livres--;
     printf("%s %d\n", aux->nome, aux->livres);
 
@@ -333,14 +334,12 @@ void adicionaListaCarros(char nome_par[NOME], char matricula[9], Data data){
     carro_novo->data_s.ano = 0;
     carro_novo->valor_pago = 0;
     carro_novo->prox = NULL;
-    if (aux_carro == NULL){
+    if (aux->carros == NULL){
         aux->carros = carro_novo;
     } else {
-        while(aux_carro->prox != NULL){
-            aux_carro = aux_carro->prox;
-        }
-        aux_carro->prox = carro_novo;
+        aux->ultimo_carro->prox = carro_novo;
     }
+    aux->ultimo_carro = carro_novo;
 }
 
 /**
@@ -516,6 +515,65 @@ void leArgumentosSaida(){
 }
 
 /**
+    quarta implementação____________________________________________________________________________________
+*/
+
+/**
+    da printf da lista de carros existentes por ordem de parque e de entrada
+    @param matricula do carro
+*/
+void mustrarCarro(char matricula[9]){
+    Parque *aux = lista_parques;
+    Carro *aux_carro;
+    int i = TRUE;
+
+    if (!(matriculaValida(matricula))){
+        printf("%s: invalid licence plate.\n", matricula);
+    }else{
+        while (aux != NULL) {
+            aux_carro = aux->carros;
+            while (aux_carro != NULL) {
+                if(strcmp(aux_carro->matricula, matricula)==0 && aux_carro->data_s.ano!=0){
+                    i = FALSE;
+                    printf("%s ", aux->nome);
+                    printf("%02d-%02d-%d ", aux_carro->data_e.dia, aux_carro->data_e.mes, aux_carro->data_e.ano);
+                    printf("%02d:%02d ", aux_carro->data_e.hora, aux_carro->data_e.minuto);
+                    printf("%02d-%02d-%d ", aux_carro->data_s.dia, aux_carro->data_s.mes, aux_carro->data_s.ano);
+                    printf("%02d:%02d\n", aux_carro->data_s.hora, aux_carro->data_s.minuto);
+                }else if(strcmp(aux_carro->matricula, matricula)==0 && aux_carro->data_s.ano==0){
+                    i = FALSE;
+                    printf("%s ", aux->nome);
+                    printf("%02d-%02d-%d ", aux_carro->data_e.dia, aux_carro->data_e.mes, aux_carro->data_e.ano);
+                    printf("%02d:%02d\n", aux_carro->data_e.hora, aux_carro->data_e.minuto);
+                    break;
+                }
+                aux_carro = aux_carro->prox;
+            }
+            aux = aux->prox;
+        }
+        if (i){
+            printf("%s: no entries found in any parking.\n", matricula);
+        }
+    }
+}
+
+/**
+    Le o input do utilizador para o comando v
+*/
+void leArgumentosV(){
+    char c, matricula[9];
+    while ((c = getchar()) == ' ');
+    ungetc(c, stdin);
+    scanf("%s", matricula);
+    mustrarCarro(matricula);
+}
+
+/**
+    quinta implementação____________________________________________________________________________________
+*/
+
+
+/**
     Le o input do utilizador para direionar para a funcao certa
     @return retorna sempre 0
 */
@@ -535,6 +593,7 @@ int main(){
             leArgumentosSaida();
             break;
             case 'v':
+            leArgumentosV();
             break;
             case 'f':
             break;
