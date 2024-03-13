@@ -410,3 +410,21 @@ int main(){
 
     return 0;
 }
+
+void removeParque(Parque *parque){
+    Parque *aux_par_ant = NULL, *aux_par_pos = parque;
+    
+    removeListas(parque);
+
+    if (aux_par_ant == parque) {
+        aux_par_ant = aux_par_pos;
+    } else {
+        while (strcmp(aux_par_pos->nome, parque->nome) != 0){
+            aux_par_ant = aux_par_pos;
+            aux_par_pos = aux_par_pos->prox;
+        }
+        aux_par_ant->prox = aux_par_pos->prox;
+    }
+    free(parque->nome);
+    free(parque);
+}
