@@ -256,13 +256,22 @@ int carroNumParque(char *matr){
 }
 
 /**
-    verifica se a data e maior que a ultima data
+    verifica se a data e valida
     @param data a data de entrada
     @param ult_data ultima data que foi inserida
     @return inteiro TRUE caso passe nos criterios ou FALSE caso nao passe
 */
 int dataValida(Data data, Data ult_data){
+    int dias_mes[13] = {0 ,31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
     int n;
+
+    // Verifica se o mês eh valido
+    if (data.mes < 1 || data.mes > 12)
+        return FALSE;
+    // Verifica se o dia e valido
+    if (data.dia < 1 || data.dia > dias_mes[data.mes])
+        return FALSE;
+    // Verifica se a data nova eh maior que a ultima data
     if (data.ano != ult_data.ano)
         n = (data.ano > ult_data.ano) ? TRUE : FALSE;
     else if (data.mes != ult_data.mes)
