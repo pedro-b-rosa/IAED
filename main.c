@@ -9,8 +9,8 @@
 #include <ctype.h>
 #include <string.h>
 
-#define MAXPARQUES 20
-#define NOME 40
+#define MAXPARQUES 20 // numero maximo de parques
+#define NOME 40 // tamanho maximo do nome
 #define FALSE 0
 #define TRUE 1
 
@@ -44,6 +44,7 @@ typedef struct Parque{
 
 Parque *lista_parques = NULL; // ponteir para lista de parques
 int num_parques = 0; // numero de parques criados
+int dias_mes[13] = {0 ,31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 Data ult_data; // ultima data usada
 
 /**
@@ -261,8 +262,7 @@ int carroNumParque(char *matr){
     @param ult_data ultima data que foi inserida
     @return inteiro TRUE caso passe nos criterios ou FALSE caso nao passe
 */
-int dataValida(Data data, Data ult_data){
-    int dias_mes[13] = {0 ,31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+int dataValida(Data data){
     int n;
 
     // Verifica se o mês eh valido
@@ -312,7 +312,7 @@ int podeAdicionarCarro(char nome_par[NOME], char matricula[9], Data data){
         printf("%s: invalid vehicle entry.\n", matricula);
         return FALSE;
     }
-    if (!(dataValida(data, ult_data))){ 
+    if (!(dataValida(data))){ 
         printf("invalid date.\n");
         return FALSE;
     }
@@ -401,7 +401,7 @@ int podeRegistarSaida(char nome_par[NOME], char matricula[9], Data data){
         printf("%s: invalid vehicle exit.\n", matricula);
         return FALSE;
     }
-    if (!(dataValida(data, ult_data))){ 
+    if (!(dataValida(data))){ 
         printf("invalid date.\n");
         return FALSE;
     }
@@ -416,7 +416,6 @@ int podeRegistarSaida(char nome_par[NOME], char matricula[9], Data data){
     @return o numero de minutos entre as duas datas
 */
 long int minutosEntreDatas(Data data_e, Data data_s){
-    int dias_mes[13] = {0 ,31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
     long int t = 0, conta = 0;
 
     while(data_e.dia != data_s.dia || data_e.mes != data_s.mes || data_e.ano != data_s.ano){
@@ -531,10 +530,13 @@ void leArgumentosSaida(){
     da printf da lista de carros existentes por ordem de parque e de entrada
     @param matricula do carro
 */
-void mustrarCarro(char matricula[9]){
+void mustrarCarro(){
     Parque *aux = lista_parques;
     Carro *aux_carro;
+    char matricula[9];
     int i = TRUE;
+
+    scanf("%s", matricula);
 
     if (!(matriculaValida(matricula))){
         printf("%s: invalid licence plate.\n", matricula);
@@ -567,20 +569,179 @@ void mustrarCarro(char matricula[9]){
 }
 
 /**
-    Le o input do utilizador para o comando v
-*/
-void leArgumentosV(){
-    char c, matricula[9];
-    while ((c = getchar()) == ' ');
-    ungetc(c, stdin);
-    scanf("%s", matricula);
-    mustrarCarro(matricula);
-}
-
-/**
     quinta implementação____________________________________________________________________________________
 */
 
+int validarDataAnterior(Data data){
+    int n;
+
+    // Verifica se o mês eh valido
+    if (data.mes < 1 || data.mes > 12)
+        return FALSE;
+    // Verifica se o dia e valido
+    if (data.dia < 1 || data.dia > dias_mes[data.mes])
+        return FALSE;
+    // Verifica se a data nova eh menor que a ultima data
+    if (data.ano != ult_data.ano)
+        n = (data.ano <= ult_data.ano) ? TRUE : FALSE;
+    else if (data.mes != ult_data.mes)
+        n = (data.mes <= ult_data.mes) ? TRUE : FALSE;
+    else if (data.dia != ult_data.dia)
+        n = (data.dia <= ult_data.dia) ? TRUE : FALSE;
+    return n;
+}
+
+/**
+    verifica se a data de d1 é igual a de d2
+    @param d1 data 1
+    @param d2 data 2
+    @return inteiro TRUE caso a data de d1 seja igual a de d2 
+    ou FALSE caso contrario
+*/
+int dataIgual(Data d1, Data d2){
+    if(d1.ano == d2.ano && d1.mes == d2.mes && d1.dia == d2.dia)
+        return TRUE;
+    else
+        return FALSE;
+}
+
+/**
+    verifica se a hora de d1 é maior que a de d2
+    @param d1 data 1
+    @param d2 data 2
+    @return inteiro TRUE caso a hora de d1 seja maior que a de d2 
+    ou FALSE caso contrario
+*/
+int horaMaior(Data d1, Data d2){
+    if(d1.hora > d2.hora)
+        return TRUE;
+    else if(d1.hora == d2.hora && d1.minuto > d2.minuto)
+        return TRUE;
+    else
+        return FALSE;
+}
+
+/**
+    cria uma lista de carros por ordem de hora de saida
+    @param aux_carro carro a adicionar
+    @param lista_carros vetor para lista de carros
+*/
+void criaListaOrd(Carro *aux_carro,Carro **lista_carros){
+    Carro *aux_ant, *aux_pos, *carro = (Carro*) malloc(sizeof(Carro));
+    
+    strcpy(carro->matricula, aux_carro->matricula);
+    carro->data_s.hora = aux_carro->data_s.hora;
+    carro->data_s.minuto = aux_carro->data_s.minuto;
+    carro->valor_pago = aux_carro->valor_pago;
+    carro->prox = NULL;
+    if(*lista_carros == NULL){
+        *lista_carros = carro;
+    }else{
+        aux_ant = *lista_carros;
+        aux_pos = (*lista_carros)->prox;
+        while(aux_pos != NULL){
+            if(horaMaior(aux_pos->data_s, aux_carro->data_s)){
+                aux_ant->prox = carro;
+                carro->prox = aux_pos;
+                break;
+            }else{
+                aux_ant = aux_pos;
+                aux_pos = aux_pos->prox;
+            }
+        }
+        if(aux_pos == NULL){
+            if(horaMaior(aux_ant->data_s, aux_carro->data_s)){
+                *lista_carros = carro;
+                carro->prox = aux_ant;
+            }else{
+                aux_ant->prox = carro;
+            }
+        }
+    }
+}
+
+/**
+    da printf da lista de carros existentes por ordem de parque e de entrada
+    @param lista_carros lista de carros
+*/
+void mustraAlista(Carro *lista_carros){
+    Carro *aux = lista_carros;
+
+    while (aux != NULL) {
+        printf("%s ", aux->matricula);
+        printf("%02d:%02d ", aux->data_s.hora, aux->data_s.minuto);
+        printf("%.2f\n", aux->valor_pago);
+        aux = aux->prox;
+    }
+}
+
+/**
+    da free a lista de carros
+    @param lista_carros lista de carros
+*/
+void darFreeListaOrd(Carro *lista_carros){
+    Carro *aux = lista_carros, *aux_pos = lista_carros;
+
+    while (aux_pos != NULL) {
+        aux_pos = aux->prox;
+        free(aux);
+        aux = aux_pos;
+    }
+}
+
+/**
+    guia para a funcao mustrarFaturaCarros caso não de erro
+    @param matricula do carro
+    @param data a data a consultar
+    printf("%s ", aux_carro->matricula);
+    printf("%02d:%02d ", aux_carro->data_s.hora, aux_carro->data_s.minuto);
+    printf("%.2f\n", aux_carro->valor_pago);
+*/
+void mustrarFaturaCarros(char nome_par[NOME], Data data){
+    Parque *aux = lista_parques;
+    Carro *aux_carro, *lista_carros = NULL;
+
+    aux = parqueExiste(nome_par);
+    if (aux == NULL){
+        printf("%s: no such parking.\n", nome_par);
+    }else if (!(validarDataAnterior(data))){
+        printf("invalid date.\n");
+    }else{
+        aux_carro = aux->carros;
+        while (aux_carro != NULL) {
+            if(dataIgual(data, aux_carro->data_s)){
+                criaListaOrd(aux_carro, &lista_carros);
+            }
+            aux_carro = aux_carro->prox;
+        }
+        mustraAlista(lista_carros);
+        darFreeListaOrd(lista_carros);
+    }
+}
+
+/**
+    Le o input do utilizador para o comando f
+*/
+void leArgumentosFaturacao(){
+    char nome_par[NOME], c;
+    Data d; // data a consultar
+
+    while ((c = getchar()) == ' ');
+    ungetc(c, stdin);
+    if((c = getchar()) == '"'){
+        ungetc(c, stdin);
+        scanf("\"%[^\"]\"", nome_par);
+    }else{
+        ungetc(c, stdin);
+        scanf("%s", nome_par);
+    }
+    if ((c = getchar()) != '\n'){
+        scanf("%d-%d-%d",&d.dia,&d.mes,&d.ano);
+        mustrarFaturaCarros(nome_par, d);
+    }else{
+        // mostrar faturacao do parque pelas datas
+    }
+}
 
 /**
     Le o input do utilizador para direionar para a funcao certa
@@ -602,9 +763,10 @@ int main(){
             leArgumentosSaida();
             break;
             case 'v':
-            leArgumentosV();
+            mustrarCarro();
             break;
             case 'f':
+            leArgumentosFaturacao();
             break;
             case 'r':
             break;
