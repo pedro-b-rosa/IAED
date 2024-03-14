@@ -17,7 +17,7 @@
 #define ERROVALOR ": invalid cost."
 #define ERROPARQUES ": too many parks."
 #define ERROVEICULO ": invalid vehicle entry."
-#define ERRODATA ": invalid date."
+#define ERRODATA "invalid date."
 #define ERROVEICULOSAIDA ": invalid vehicle exit."
 #define ERROPARQUENAOEXITE ": no such parking."
 #define ERROMATRICULAINVALIDA ": invalid licence plate."
@@ -333,7 +333,7 @@ int podeAdicionarCarro(char nome_par[BUFSIZ], char matricula[9], Data data){
         return FALSE;
     }
     if (!(dataValida(data))){ 
-        printf("%s\n", ERRORDATA);
+        printf("%s\n", ERRODATA);
         return FALSE;
     }
     atualizarData(data);
@@ -422,7 +422,7 @@ int podeRegistarSaida(char nome_par[BUFSIZ], char matricula[9], Data data){
         return FALSE;
     }
     if (!(dataValida(data))){ 
-        printf("%s\n", ERRORDATA);
+        printf("%s\n", ERRODATA);
         return FALSE;
     }
     atualizarData(data);
@@ -639,9 +639,7 @@ void mustrarCarro(){
 */
 
 int validarDataAnterior(Data data){
-    int n;
-
-    // Verifica se o mês eh valido
+    // Verifica se o mes eh valido
     if (data.mes < 1 || data.mes > 12)
         return FALSE;
     // Verifica se o dia e valido
@@ -649,12 +647,12 @@ int validarDataAnterior(Data data){
         return FALSE;
     // Verifica se a data nova eh menor que a ultima data
     if (data.ano != ult_data.ano)
-        n = (data.ano <= ult_data.ano) ? TRUE : FALSE;
+        return (data.ano <= ult_data.ano) ? TRUE : FALSE;
     else if (data.mes != ult_data.mes)
-        n = (data.mes <= ult_data.mes) ? TRUE : FALSE;
+        return (data.mes <= ult_data.mes) ? TRUE : FALSE;
     else if (data.dia != ult_data.dia)
-        n = (data.dia <= ult_data.dia) ? TRUE : FALSE;
-    return n;
+        return (data.dia <= ult_data.dia) ? TRUE : FALSE;
+    return TRUE;
 }
 
 /**
@@ -754,7 +752,7 @@ void mustrarFaturaCarros(char nome_par[BUFSIZ], Data data){
     if (aux == NULL){
         printf("%s: no such parking.\n", nome_par);
     }else if (!(validarDataAnterior(data))){
-        printf("%s\n", ERRORDATA);
+        printf("%s\n", ERRODATA);
     }else{
         aux_carro = aux->carros;
         while (aux_carro != NULL) {
