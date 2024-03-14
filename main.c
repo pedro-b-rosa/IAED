@@ -12,6 +12,17 @@
 #define MAXPARQUES 20 // numero maximo de parques
 #define FALSE 0
 #define TRUE 1
+#define ERROPARQUEEXISTE ": parking already exists."
+#define ERROCAPACIDADE ": invalid capacity."
+#define ERROVALOR ": invalid cost."
+#define ERROPARQUES ": too many parks."
+#define ERROVEICULO ": invalid vehicle entry."
+#define ERRODATA ": invalid date."
+#define ERROVEICULOSAIDA ": invalid vehicle exit."
+#define ERROPARQUENAOEXITE ": no such parking."
+#define ERROMATRICULAINVALIDA ": invalid licence plate."
+#define ERROESTACIONAMENTOCHEIO ": parking is full."
+#define ERROHISTORICO ": no entries found in any parking."
 
 typedef struct {
     int dia;
@@ -105,19 +116,19 @@ void mustrarParques(){
  */
 int verificaParque(char nome[BUFSIZ], int cap, float val_15, float val_1h, float val_max){
     if(parqueExiste(nome) != NULL){
-        printf("%s: parking already exists.\n", nome);
+        printf("%s%s\n", nome, ERROPARQUEEXISTE);
         return FALSE;
     }
     if (cap <= 0) {
-        printf("%d: invalid capacity.\n",cap);
+        printf("%d%s\n", cap, ERROCAPACIDADE);
         return FALSE;
     }
     if ((val_15 > val_1h) || (val_1h > val_max)) {
-        printf("invalid cost.\n");
+        printf("%s\n", ERROVALOR);
         return FALSE;
     }
     if (num_parques >= MAXPARQUES) {
-        printf("too many parks.\n");
+        printf("%s\n", ERROPARQUES);
         return FALSE;
     }
     return TRUE;
@@ -314,15 +325,15 @@ int podeAdicionarCarro(char nome_par[BUFSIZ], char matricula[9], Data data){
         return FALSE;
     }
     if (!(matriculaValida(matricula))){
-        printf("%s: invalid licence plate.\n", matricula);
+        printf("%s%s\n", matricula, ERROMATRICULAINVALIDA);
         return FALSE;
     }
     if (carroNumParque(matricula)){
-        printf("%s: invalid vehicle entry.\n", matricula);
+        printf("%s%s\n", matricula, ERROVEICULO);
         return FALSE;
     }
     if (!(dataValida(data))){ 
-        printf("invalid date.\n");
+        printf("%s\n", ERRORDATA);
         return FALSE;
     }
     atualizarData(data);
@@ -403,7 +414,7 @@ int podeRegistarSaida(char nome_par[BUFSIZ], char matricula[9], Data data){
         return FALSE;
     }
     if (!(matriculaValida(matricula))){
-        printf("%s: invalid licence plate.\n", matricula);
+        printf("%s%s\n", matricula, ERROMATRICULAINVALIDA);
         return FALSE;
     }
     if (!(carroNumParque(matricula))){
@@ -411,7 +422,7 @@ int podeRegistarSaida(char nome_par[BUFSIZ], char matricula[9], Data data){
         return FALSE;
     }
     if (!(dataValida(data))){ 
-        printf("invalid date.\n");
+        printf("%s\n", ERRORDATA);
         return FALSE;
     }
     atualizarData(data);
@@ -594,7 +605,7 @@ void mustrarCarro(){
     scanf("%s", matricula);
 
     if (!(matriculaValida(matricula))){
-        printf("%s: invalid licence plate.\n", matricula);
+        printf("%s%s\n", matricula, ERROMATRICULAINVALIDA);
     }else{
         while (aux != NULL) {
             aux_carro = aux->carros;
@@ -737,13 +748,13 @@ void darFreeListaOrd(Carro *lista_carros){
 */
 void mustrarFaturaCarros(char nome_par[BUFSIZ], Data data){
     Parque *aux = lista_parques;
-    Carro *aux_carro, *lista_carros = NULL;
+    Carro *aux_carro = NULL, *lista_carros = NULL;
 
     aux = parqueExiste(nome_par);
     if (aux == NULL){
         printf("%s: no such parking.\n", nome_par);
     }else if (!(validarDataAnterior(data))){
-        printf("invalid date.\n");
+        printf("%s\n", ERRORDATA);
     }else{
         aux_carro = aux->carros;
         while (aux_carro != NULL) {
@@ -752,8 +763,10 @@ void mustrarFaturaCarros(char nome_par[BUFSIZ], Data data){
             }
             aux_carro = aux_carro->prox;
         }
-        mustraAlista(lista_carros);
-        darFreeListaOrd(lista_carros);
+        if (lista_carros != NULL) { 
+            mustraAlista(lista_carros); 
+            darFreeListaOrd(lista_carros); 
+        }
     }
 }
 
@@ -797,6 +810,8 @@ void leArgumentosFaturacao(){
     }
     if ((c = getchar()) != '\n'){
         scanf("%d-%d-%d",&d.dia,&d.mes,&d.ano);
+        d.hora = 0;
+        d.minuto = 0;
         mustrarFaturaCarros(nome_par, d);
     }else{
         mustrarHistorico(nome_par);
@@ -844,6 +859,7 @@ void removeParque(Parque *parque){
         aux_ant->prox = parque->prox;
     }
     removeListas(parque);
+    free(parque->nome);
     free(parque);
     num_parques--;
 }
