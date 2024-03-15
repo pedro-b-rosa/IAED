@@ -12,14 +12,15 @@
 #define MAXPARQUES 20 // numero maximo de parques
 #define FALSE 0
 #define TRUE 1
+
 #define ERROPARQUEEXISTE ": parking already exists."
 #define ERROCAPACIDADE ": invalid capacity."
-#define ERROVALOR ": invalid cost."
-#define ERROPARQUES ": too many parks."
+#define ERROVALOR "invalid cost."
+#define ERROPARQUES "too many parks."
 #define ERROVEICULO ": invalid vehicle entry."
 #define ERRODATA "invalid date."
 #define ERROVEICULOSAIDA ": invalid vehicle exit."
-#define ERROPARQUENAOEXITE ": no such parking."
+#define ERROPARQUENAOEXISTE ": no such parking."
 #define ERROMATRICULAINVALIDA ": invalid licence plate."
 #define ERROESTACIONAMENTOCHEIO ": parking is full."
 #define ERROHISTORICO ": no entries found in any parking."
@@ -317,11 +318,11 @@ int podeAdicionarCarro(char nome_par[BUFSIZ], char matricula[9], Data data){
 
     aux = parqueExiste(nome_par);
     if (aux == NULL){
-        printf("%s: no such parking.\n", nome_par);
+        printf("%s%s\n", nome_par,  ERROPARQUENAOEXISTE);
         return FALSE;
     }
     if (aux->livres == 0){
-        printf("%s: parking is full.\n", nome_par);
+        printf("%s%s\n", nome_par, ERROESTACIONAMENTOCHEIO);
         return FALSE;
     }
     if (!(matriculaValida(matricula))){
@@ -410,7 +411,7 @@ int podeRegistarSaida(char nome_par[BUFSIZ], char matricula[9], Data data){
 
     aux = parqueExiste(nome_par);
     if (aux == NULL){
-        printf("%s: no such parking.\n", nome_par);
+        printf("%s%s\n", nome_par,  ERROPARQUENAOEXISTE);
         return FALSE;
     }
     if (!(matriculaValida(matricula))){
@@ -418,7 +419,7 @@ int podeRegistarSaida(char nome_par[BUFSIZ], char matricula[9], Data data){
         return FALSE;
     }
     if (!(carroNumParque(matricula))){
-        printf("%s: invalid vehicle exit.\n", matricula);
+        printf("%s%s\n", matricula, ERROVEICULOSAIDA);
         return FALSE;
     }
     if (!(dataValida(data))){ 
@@ -629,7 +630,7 @@ void mustrarCarro(){
             aux = aux->prox;
         }
         if (i){
-            printf("%s: no entries found in any parking.\n", matricula);
+            printf("%s%s\n", matricula, ERROHISTORICO);
         }
     }
 }
@@ -750,7 +751,7 @@ void mustrarFaturaCarros(char nome_par[BUFSIZ], Data data){
 
     aux = parqueExiste(nome_par);
     if (aux == NULL){
-        printf("%s: no such parking.\n", nome_par);
+        printf("%s%s\n", nome_par,  ERROPARQUENAOEXISTE);
     }else if (!(validarDataAnterior(data))){
         printf("%s\n", ERRODATA);
     }else{
@@ -778,7 +779,7 @@ void mustrarHistorico(char nome_par[BUFSIZ]){
 
     aux = parqueExiste(nome_par);
     if (aux == NULL){
-        printf("%s: no such parking.\n", nome_par);
+        printf("%s%s\n", nome_par,  ERROPARQUENAOEXISTE);
     }else{
         aux_historico = aux->historico;
         while (aux_historico != NULL) {
@@ -891,7 +892,7 @@ void leArgumentosRemove(){
     }
     aux = parqueExiste(nome_par);
     if (aux == NULL){
-        printf("%s: no such parking.\n", nome_par);
+        printf("%s%s\n", nome_par,  ERROPARQUENAOEXISTE);
     } else {
         removeParque(aux);
     }
