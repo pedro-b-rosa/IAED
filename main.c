@@ -61,7 +61,6 @@ typedef struct Parque{
     struct Parque *prox; // ponteiro para o proximo parque
 } Parque;
 
-Parque *lista_parques = NULL; // ponteir para lista de parques
 int num_parques = 0; // numero de parques criados
 int dias_mes[13] = {0 ,31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 Data ult_data; // ultima data usada
@@ -80,9 +79,10 @@ char* criaNome(char vetor[BUFSIZ]) {
 /**
     procura se o parque existe
     @param vetor do nome para ser transformado
+    @param lista_parques vetor para a lista dos parques
     @return ponteiro para o parque ou NULL caso não exista
 */
-Parque* parqueExiste(char nome[BUFSIZ]){
+Parque* parqueExiste(char nome[BUFSIZ], Parque *lista_parques){
     Parque *aux = lista_parques;
 
     while (aux != NULL) {
@@ -96,9 +96,10 @@ Parque* parqueExiste(char nome[BUFSIZ]){
 }
 
 /**
+    @param lista_parques vetor para a lista dos parques
     da printf da lista de parques existentes por ordem de colucacao
 */
-void mustrarParques(){
+void mustrarParques(Parque *lista_parques){
     Parque *aux = lista_parques;
     while (aux != NULL) {
         printf("%s %d %d\n", aux->nome, aux->cap, aux->livres);
@@ -113,10 +114,11 @@ void mustrarParques(){
     @param val_15 valores a pagar pelo parque na primeira hora
     @param val_1h valores a pagar pelo parque depois da primeira hora
     @param val_max valore maximo diario
+    @param lista_parques vetor para a lista dos parques
     @return inteiro 1 caso verifique, 0 caso falhe
  */
-int verificaParque(char nome[BUFSIZ], int cap, float val_15, float val_1h, float val_max){
-    if(parqueExiste(nome) != NULL){
+int verificaParque(char nome[BUFSIZ], int cap, float val_15, float val_1h, float val_max, Parque *lista_parques){
+    if(parqueExiste(nome, lista_parques) != NULL){
         printf("%s%s\n", nome, ERROPARQUEEXISTE);
         return FALSE;
     }
@@ -145,12 +147,12 @@ int verificaParque(char nome[BUFSIZ], int cap, float val_15, float val_1h, float
     @param lista_parques vetor para a lista dos parques
     @param val_15 valores a pagar pelo parque
  */
-void criaParque(char nome[BUFSIZ], int cap, float val_15, float val_1h, float val_max){
+void criaParque(char nome[BUFSIZ], int cap, float val_15, float val_1h, float val_max, Parque **lista_parques){
     int verifica;
     char *nome_novo;
     Parque *parque_novo = (Parque *) malloc(sizeof(Parque)), *aux;
 
-    verifica = verificaParque(nome,cap,val_15,val_1h,val_max);
+    verifica = verificaParque(nome,cap,val_15,val_1h,val_max, *lista_parques);
     nome_novo = criaNome(nome);
     if (verifica) {
         parque_novo->nome = nome_novo;
@@ -165,10 +167,10 @@ void criaParque(char nome[BUFSIZ], int cap, float val_15, float val_1h, float va
         parque_novo->historico = NULL;
         parque_novo->ultimo_historico = NULL;
 
-        if (lista_parques == NULL) {
-            lista_parques = parque_novo;
+        if (*lista_parques == NULL) {
+            *lista_parques = parque_novo;
         } else {
-            aux = lista_parques;
+            aux = *lista_parques;
             while (aux->prox != NULL) {
                 aux = aux->prox;
             }
@@ -183,7 +185,7 @@ void criaParque(char nome[BUFSIZ], int cap, float val_15, float val_1h, float va
 /**
     Le o input do utilizador para o comando p
 */
-void leArgumentosParque(){
+void leArgumentosParque(Parque **lista_parques){
     char nome[BUFSIZ], c;
     int cap;
     float val_15, val_1h, val_max;
@@ -198,9 +200,9 @@ void leArgumentosParque(){
             ungetc(c, stdin);
             scanf("%s%d%f%f%f", nome, &cap, &val_15, &val_1h, &val_max);
         }
-        criaParque(nome, cap, val_15, val_1h, val_max);
+        criaParque(nome, cap, val_15, val_1h, val_max, lista_parques);
     }else{
-        mustrarParques();
+        mustrarParques(*lista_parques);
     }
 }
 
@@ -258,9 +260,10 @@ int matriculaValida(char matricula[9]){
 /**
     verifica se o carro ja está em algum parque
     @param matr matricula do carro
+    @param lista_parques vetor para a lista dos parques
     @return inteiro 1 caso a matricula seja válida 0 caso falhe
 */
-int carroNumParque(char *matr){
+int carroNumParque(char *matr, Parque *lista_parques){
     Parque *aux = lista_parques;
     Carro *aux_carro;
 
@@ -313,12 +316,13 @@ int dataValida(Data data){
     @param nome_par nome do parque
     @param matricula do carro
     @param data a data de entrada
+    @param lista_parques vetor para a lista dos parques
     @return inteiro TRUE caso passe nos criterios ou FALSE caso nao passe
 */
-int podeAdicionarCarro(char nome_par[BUFSIZ], char matricula[9], Data data){
+int podeAdicionarCarro(char nome_par[BUFSIZ], char matricula[9], Data data, Parque *lista_parques){
     Parque *aux = lista_parques;
 
-    aux = parqueExiste(nome_par);
+    aux = parqueExiste(nome_par, lista_parques);
     if (aux == NULL){
         printf("%s%s\n", nome_par,  ERROPARQUENAOEXISTE);
         return FALSE;
@@ -331,7 +335,7 @@ int podeAdicionarCarro(char nome_par[BUFSIZ], char matricula[9], Data data){
         printf("%s%s\n", matricula, ERROMATRICULAINVALIDA);
         return FALSE;
     }
-    if (carroNumParque(matricula)){
+    if (carroNumParque(matricula, lista_parques)){
         printf("%s%s\n", matricula, ERROVEICULO);
         return FALSE;
     }
@@ -349,11 +353,11 @@ int podeAdicionarCarro(char nome_par[BUFSIZ], char matricula[9], Data data){
     @param matricula do carro
     @param data a data de entrada
 */
-void adicionaListaCarros(char nome_par[BUFSIZ], char matricula[9], Data data){
+void adicionaListaCarros(char nome_par[BUFSIZ], char matricula[9], Data data, Parque *lista_parques){
     Parque *aux = lista_parques;
     Carro *carro_novo = (Carro*)malloc(sizeof(Carro));
 
-    aux = parqueExiste(nome_par);
+    aux = parqueExiste(nome_par, lista_parques);
     aux->livres--;
     printf("%s %d\n", aux->nome, aux->livres);
 
@@ -377,7 +381,7 @@ void adicionaListaCarros(char nome_par[BUFSIZ], char matricula[9], Data data){
 /**
     Le o input do utilizador para o comando e
 */
-void leArgumentosEntrada(){
+void leArgumentosEntrada(Parque *lista_parques){
     char nome_par[BUFSIZ], c, matricula[9];
     Data d; // data de entrada
 
@@ -392,8 +396,8 @@ void leArgumentosEntrada(){
     }
     scanf("%d-%d-%d %d:%d",&d.dia,&d.mes,&d.ano,&d.hora,&d.minuto);
 
-    if (podeAdicionarCarro(nome_par, matricula, d)){
-        adicionaListaCarros(nome_par, matricula, d);
+    if (podeAdicionarCarro(nome_par, matricula, d, lista_parques)){
+        adicionaListaCarros(nome_par, matricula, d, lista_parques);
     }
 }
 
@@ -408,10 +412,10 @@ void leArgumentosEntrada(){
     @param data a data de entrada
     @return inteiro TRUE caso passe nos criterios ou FALSE caso nao passe
 */
-int podeRegistarSaida(char nome_par[BUFSIZ], char matricula[9], Data data){
+int podeRegistarSaida(char nome_par[BUFSIZ], char matricula[9], Data data, Parque *lista_parques){
     Parque *aux = lista_parques;
 
-    aux = parqueExiste(nome_par);
+    aux = parqueExiste(nome_par, lista_parques);
     if (aux == NULL){
         printf("%s%s\n", nome_par,  ERROPARQUENAOEXISTE);
         return FALSE;
@@ -420,7 +424,7 @@ int podeRegistarSaida(char nome_par[BUFSIZ], char matricula[9], Data data){
         printf("%s%s\n", matricula, ERROMATRICULAINVALIDA);
         return FALSE;
     }
-    if (!(carroNumParque(matricula))){
+    if (!(carroNumParque(matricula, lista_parques))){
         printf("%s%s\n", matricula, ERROVEICULOSAIDA);
         return FALSE;
     }
@@ -545,12 +549,12 @@ void adicionaHistorico(Parque *aux, Data data, float valor){
     @param matricula do carro
     @param data a data de saida
 */
-void RegistaSaida(char nome_par[BUFSIZ], char matricula[9], Data data){
+void RegistaSaida(char nome_par[BUFSIZ], char matricula[9], Data data, Parque *lista_parques){
     Parque *aux = lista_parques;
     Carro *aux_carro;
     float valor_pago;
 
-    aux = parqueExiste(nome_par);
+    aux = parqueExiste(nome_par, lista_parques);
     aux_carro = aux->carros;
     while (aux_carro != NULL) {
         if(strcmp(aux_carro->matricula, matricula)==0 && aux_carro->data_s.ano==0){
@@ -580,7 +584,7 @@ void RegistaSaida(char nome_par[BUFSIZ], char matricula[9], Data data){
 /**
     Le o input do utilizador para o comando s
 */
-void leArgumentosSaida(){
+void leArgumentosSaida(Parque *lista_parques){
     char nome_par[BUFSIZ], c, matricula[9];
     Data d; // data de saida
 
@@ -594,8 +598,8 @@ void leArgumentosSaida(){
         scanf("%s%s", nome_par, matricula);
     }
     scanf("%d-%d-%d %d:%d",&d.dia,&d.mes,&d.ano,&d.hora,&d.minuto);
-    if (podeRegistarSaida(nome_par, matricula, d)){
-        RegistaSaida(nome_par, matricula, d);
+    if (podeRegistarSaida(nome_par, matricula, d, lista_parques)){
+        RegistaSaida(nome_par, matricula, d, lista_parques);
     }
 }
 
@@ -648,7 +652,7 @@ void colocaParqueOrd(Parque **lista_ord, Parque *parque){
     @param lista_ord vetor para lista de parques
     @param parque parque a adicionar
 */
-void criaListaOrdParques(Parque **lista_ord){
+void criaListaOrdParques(Parque **lista_ord, Parque *lista_parques){
     Parque *aux = lista_parques;
     while (aux != NULL){
         colocaParqueOrd(lista_ord, aux);
@@ -659,7 +663,7 @@ void criaListaOrdParques(Parque **lista_ord){
 /**
     da printf da lista de carros existentes por ordem de parque e de entrada
 */
-void mustrarCarro(){
+void mustrarCarro(Parque *lista_parques){
     Parque *lista_ord = NULL, *aux;
     Carro *aux_carro;
     char matricula[9];
@@ -670,7 +674,7 @@ void mustrarCarro(){
     if (!(matriculaValida(matricula))){
         printf("%s%s\n", matricula, ERROMATRICULAINVALIDA);
     }else{
-        criaListaOrdParques(&lista_ord);
+        criaListaOrdParques(&lista_ord, lista_parques);
         while (lista_ord != NULL) {
             aux_carro = lista_ord->carros;
             while (aux_carro != NULL) {
@@ -814,11 +818,11 @@ void darFreeListaOrd(Carro *lista_carros){
     @param matricula do carro
     @param data a data a consultar
 */
-void mustrarFaturaCarros(char nome_par[BUFSIZ], Data data){
+void mustrarFaturaCarros(char nome_par[BUFSIZ], Data data, Parque *lista_parques){
     Parque *aux = lista_parques;
     Carro *aux_carro = NULL, *lista_carros = NULL;
 
-    aux = parqueExiste(nome_par);
+    aux = parqueExiste(nome_par, lista_parques);
     if (aux == NULL){
         printf("%s%s\n", nome_par,  ERROPARQUENAOEXISTE);
     }else if (!(validarDataAnterior(data))){
@@ -842,11 +846,11 @@ void mustrarFaturaCarros(char nome_par[BUFSIZ], Data data){
     mostra o historico se não der erro
     @param nome_par nome do parque
 */
-void mustrarHistorico(char nome_par[BUFSIZ]){
+void mustrarHistorico(char nome_par[BUFSIZ], Parque *lista_parques){
     Parque *aux = lista_parques;
     Historico *aux_historico;
 
-    aux = parqueExiste(nome_par);
+    aux = parqueExiste(nome_par, lista_parques);
     if (aux == NULL){
         printf("%s%s\n", nome_par,  ERROPARQUENAOEXISTE);
     }else{
@@ -863,7 +867,7 @@ void mustrarHistorico(char nome_par[BUFSIZ]){
 /**
     Le o input do utilizador para o comando f
 */
-void leArgumentosFaturacao(){
+void leArgumentosFaturacao(Parque *lista_parques){
     char nome_par[BUFSIZ], c;
     Data d; // data a consultar
 
@@ -880,9 +884,9 @@ void leArgumentosFaturacao(){
         scanf("%d-%d-%d",&d.dia,&d.mes,&d.ano);
         d.hora = 0;
         d.minuto = 0;
-        mustrarFaturaCarros(nome_par, d);
+        mustrarFaturaCarros(nome_par, d, lista_parques);
     }else{
-        mustrarHistorico(nome_par);
+        mustrarHistorico(nome_par, lista_parques);
     }
 }
 
@@ -914,11 +918,11 @@ void removeListas(Parque *parque){
     remove o parque
     @param parque ponteiro para o parque a eliminar
 */
-void removeParque(Parque *parque){
-    Parque *aux = lista_parques, *aux_ant = lista_parques;
+void removeParque(Parque *parque, Parque **lista_parques){
+    Parque *aux = *lista_parques, *aux_ant = *lista_parques;
 
-    if (parque == lista_parques){
-        lista_parques = parque->prox;
+    if (parque == *lista_parques){
+        *lista_parques = parque->prox;
     }else{
         while (aux != parque) {
             aux_ant = aux;
@@ -935,10 +939,10 @@ void removeParque(Parque *parque){
 /**
     da printf da lista de parques existentes por ordem de colucacao
 */
-void mustrarParques2(){
+void mustrarParques2(Parque *lista_parques){
     Parque *aux, *lista_ord = NULL;
 
-    criaListaOrdParques(&lista_ord);
+    criaListaOrdParques(&lista_ord, lista_parques);
     while (lista_ord != NULL) {
         printf("%s\n", lista_ord->nome);
         aux = lista_ord;
@@ -950,7 +954,7 @@ void mustrarParques2(){
 /**
     le o nome do parque a remover
 */
-void leArgumentosRemove(){
+void leArgumentosRemove(Parque **lista_parques){
     char c, nome_par[BUFSIZ];
     Parque *aux;
 
@@ -963,21 +967,20 @@ void leArgumentosRemove(){
         ungetc(c, stdin);
         scanf("%s", nome_par);
     }
-    aux = parqueExiste(nome_par);
+    aux = parqueExiste(nome_par, *lista_parques);
     if (aux == NULL){
         printf("%s%s\n", nome_par,  ERROPARQUENAOEXISTE);
     } else {
-        removeParque(aux);
-        mustrarParques2();
+        removeParque(aux, lista_parques);
+        mustrarParques2(*lista_parques);
     }
 }
 
 /**
     sétima implementação____________________________________________________________________________________
 */
-void limparTudo(){
+void limparTudo(Parque *lista_parques){
     Parque *aux = lista_parques, *aux_ant = lista_parques;
-
     while (aux != NULL) {
         aux_ant = aux;
         aux = aux->prox;
@@ -992,32 +995,33 @@ void limparTudo(){
     @return retorna sempre 0
 */
 int main(){
+    Parque *lista_parques = NULL; // ponteir para lista de parques
     char c;
     ult_data.ano = 0;
 
     while ((c = getchar()) != 'q'){
         switch(c){
             case 'p':
-            leArgumentosParque();
+            leArgumentosParque(&lista_parques);
             break;
             case 'e':
-            leArgumentosEntrada();
+            leArgumentosEntrada(lista_parques);
             break;
             case 's':
-            leArgumentosSaida();
+            leArgumentosSaida(lista_parques);
             break;
             case 'v':
-            mustrarCarro();
+            mustrarCarro(lista_parques);
             break;
             case 'f':
-            leArgumentosFaturacao();
+            leArgumentosFaturacao(lista_parques);
             break;
             case 'r':
-            leArgumentosRemove();
+            leArgumentosRemove(&lista_parques);
             break;
         }
     }
-    limparTudo();
+    limparTudo(lista_parques);
 
     return 0;
 }
