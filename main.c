@@ -284,26 +284,28 @@ int carroNumParque(char *matr){
     @return inteiro TRUE caso passe nos criterios ou FALSE caso nao passe
 */
 int dataValida(Data data){
-    int n;
-
-    // Verifica se o mês eh valido
+    // Verifica se o mes eh valido
     if (data.mes < 1 || data.mes > 12)
         return FALSE;
     // Verifica se o dia e valido
     if (data.dia < 1 || data.dia > dias_mes[data.mes])
         return FALSE;
+    if (data.hora < 0 || data.hora > 23)
+        return FALSE;
+    if (data.minuto < 0 || data.minuto > 59)
+        return FALSE;
     // Verifica se a data nova eh maior que a ultima data
     if (data.ano != ult_data.ano)
-        n = (data.ano > ult_data.ano) ? TRUE : FALSE;
+        return (data.ano > ult_data.ano) ? TRUE : FALSE;
     else if (data.mes != ult_data.mes)
-        n = (data.mes > ult_data.mes) ? TRUE : FALSE;
+        return (data.mes > ult_data.mes) ? TRUE : FALSE;
     else if (data.dia != ult_data.dia)
-        n = (data.dia > ult_data.dia) ? TRUE : FALSE;
+        return (data.dia > ult_data.dia) ? TRUE : FALSE;
     else if (data.hora != ult_data.hora)
-        n = (data.hora > ult_data.hora) ? TRUE : FALSE;
+        return (data.hora > ult_data.hora) ? TRUE : FALSE;
     else if (data.minuto != ult_data.minuto)
-        n = (data.minuto > ult_data.minuto) ? TRUE : FALSE;
-    return n;
+        return (data.minuto > ult_data.minuto) ? TRUE : FALSE;
+    return TRUE;
 }
 
 /**
@@ -458,31 +460,6 @@ long int minutosEntreDatas(Data data_e, Data data_s){
 }
 
 /**
-    Calcula o valor a pagar pelo carro
-    @param minutos numero de minutos que o carro esteve no parque
-    @param v_15 valor a pagar pelo parque na primeira hora
-    @param v_1hora valor a pagar depois da primeira hora
-    @param v_max valor maximo diario
-    @return o valor a pagar pelo carro
-*/
-float valorAPagar(long int minutos, float v_15, float v_1hora, float v_max){
-    float valor = 0;
-    int dias = minutos/(24*60);
-    int minutosResto = minutos%(24*60);
-
-    valor = dias*v_max;
-    if (minutosResto <= 60){
-        valor += v_15*(minutosResto/15);
-    }else{
-        valor += v_15*4;
-        minutosResto -= 60;
-        valor += v_1hora*(minutosResto/15);
-    }
-
-    return valor;
-}
-
-/**
     verifica se a data de d1 é igual a de d2
     @param d1 data 1
     @param d2 data 2
@@ -494,6 +471,40 @@ int dataIgual(Data d1, Data d2){
         return TRUE;
     else
         return FALSE;
+}
+
+/**
+    Calcula o valor a pagar pelo carro
+    @param minutos numero de minutos que o carro esteve no parque
+    @param v_15 valor a pagar pelo parque na primeira hora
+    @param v_1hora valor a pagar depois da primeira hora
+    @param v_max valor maximo diario
+    @return o valor a pagar pelo carro
+*/
+float valorAPagar(Data data_e, Data data_s, float v_15, float v_1hora, float v_max){
+    float valor = 0;
+    int dias, minutosResto;
+    long int minutos;
+
+    minutos = minutosEntreDatas(data_e, data_s);
+    minutosResto = minutos%(24*60);
+    dias = minutos/(24*60);
+
+    if (minutosResto <= 60){
+        valor += v_15*(minutosResto/15);
+        if (minutosResto%15 != 0)
+            valor += v_15;
+    }else{
+        valor += v_15*4;
+        minutosResto -= 60;
+        valor += v_1hora*(minutosResto/15);
+        if (minutosResto%15 != 0)
+            valor += v_1hora;
+        if (valor > v_max)
+            valor = v_max;
+    }
+    valor += dias*v_max;
+    return valor;
 }
 
 /**
@@ -538,7 +549,6 @@ void RegistaSaida(char nome_par[BUFSIZ], char matricula[9], Data data){
     Parque *aux = lista_parques;
     Carro *aux_carro;
     float valor_pago;
-    long int min;
 
     aux = parqueExiste(nome_par);
     aux_carro = aux->carros;
@@ -555,8 +565,7 @@ void RegistaSaida(char nome_par[BUFSIZ], char matricula[9], Data data){
     aux_carro->data_s.dia = data.dia;
     aux_carro->data_s.hora = data.hora;
     aux_carro->data_s.minuto = data.minuto;
-    min = minutosEntreDatas(aux_carro->data_e, aux_carro->data_s);
-    valor_pago=valorAPagar(min,aux->valor_15,aux->valor_1hora,aux->valor_max);
+    valor_pago=valorAPagar(aux_carro->data_e,aux_carro->data_s,aux->valor_15,aux->valor_1hora,aux->valor_max);
     aux_carro->valor_pago = valor_pago;
     adicionaHistorico(aux, aux_carro->data_s, valor_pago);
 
@@ -595,10 +604,63 @@ void leArgumentosSaida(){
 */
 
 /**
+    coloca o parque na lista de parques por ordem alfabetica
+    @param lista_ord vetor para lista de parques
+    @param parque parque a adicionar
+*/
+void colocaParqueOrd(Parque **lista_ord, Parque *parque){
+    Parque *aux_ant, *aux_pos, *parque_novo = (Parque*) malloc(sizeof(Parque));
+
+    parque_novo->nome = parque->nome;
+    parque_novo->carros = parque->carros;
+    parque_novo->prox = NULL;
+    if(*lista_ord == NULL){
+        *lista_ord = parque_novo;
+    }else if (strcmp((*lista_ord)->nome, parque->nome) > 0){
+        parque_novo->prox = *lista_ord;
+        *lista_ord = parque_novo;
+    }else{
+        aux_ant = *lista_ord;
+        aux_pos = (*lista_ord)->prox;
+        while(aux_pos != NULL){
+            if(strcmp(aux_pos->nome, parque->nome) > 0){
+                aux_ant->prox = parque_novo;
+                parque_novo->prox = aux_pos;
+                break;
+            }else{
+                aux_ant = aux_pos;
+                aux_pos = aux_pos->prox;
+            }
+        }
+        if(aux_pos == NULL){
+            if(strcmp(aux_ant->nome, parque->nome) > 0){
+                *lista_ord = parque_novo;
+                parque_novo->prox = aux_ant;
+            }else{
+                aux_ant->prox = parque_novo;
+            }
+        }
+    }
+}
+
+/**
+    coloca o parque na lista de parques por ordem alfabetica
+    @param lista_ord vetor para lista de parques
+    @param parque parque a adicionar
+*/
+void criaListaOrdParques(Parque **lista_ord){
+    Parque *aux = lista_parques;
+    while (aux != NULL){
+        colocaParqueOrd(lista_ord, aux);
+        aux = aux->prox;
+    }
+}
+
+/**
     da printf da lista de carros existentes por ordem de parque e de entrada
 */
 void mustrarCarro(){
-    Parque *aux = lista_parques;
+    Parque *lista_ord = NULL, *aux;
     Carro *aux_carro;
     char matricula[9];
     int i = TRUE;
@@ -608,27 +670,31 @@ void mustrarCarro(){
     if (!(matriculaValida(matricula))){
         printf("%s%s\n", matricula, ERROMATRICULAINVALIDA);
     }else{
-        while (aux != NULL) {
-            aux_carro = aux->carros;
+        criaListaOrdParques(&lista_ord);
+        while (lista_ord != NULL) {
+            aux_carro = lista_ord->carros;
             while (aux_carro != NULL) {
                 if(strcmp(aux_carro->matricula, matricula)==0 && aux_carro->data_s.ano!=0){
                     i = FALSE;
-                    printf("%s ", aux->nome);
+                    printf("%s ", lista_ord->nome);
                     printf("%02d-%02d-%d ", aux_carro->data_e.dia, aux_carro->data_e.mes, aux_carro->data_e.ano);
                     printf("%02d:%02d ", aux_carro->data_e.hora, aux_carro->data_e.minuto);
                     printf("%02d-%02d-%d ", aux_carro->data_s.dia, aux_carro->data_s.mes, aux_carro->data_s.ano);
                     printf("%02d:%02d\n", aux_carro->data_s.hora, aux_carro->data_s.minuto);
-                }else if(strcmp(aux_carro->matricula, matricula)==0 && aux_carro->data_s.ano==0){
+                }else if(strcmp(aux_carro->matricula, matricula)==0){
                     i = FALSE;
-                    printf("%s ", aux->nome);
+                    printf("%s ", lista_ord->nome);
                     printf("%02d-%02d-%d ", aux_carro->data_e.dia, aux_carro->data_e.mes, aux_carro->data_e.ano);
                     printf("%02d:%02d\n", aux_carro->data_e.hora, aux_carro->data_e.minuto);
                     break;
                 }
                 aux_carro = aux_carro->prox;
             }
-            aux = aux->prox;
+            aux = lista_ord;
+            lista_ord = lista_ord->prox;
+            free(aux);
         }
+        // dar freeeeee nesta merda
         if (i){
             printf("%s%s\n", matricula, ERROHISTORICO);
         }
@@ -685,10 +751,13 @@ void criaListaOrd(Carro *aux_carro,Carro **lista_carros){
     carro->data_s.minuto = aux_carro->data_s.minuto;
     carro->valor_pago = aux_carro->valor_pago;
     carro->prox = NULL;
+    aux_ant = *lista_carros;
     if(*lista_carros == NULL){
         *lista_carros = carro;
+    }else if (horaMaior((*lista_carros)->data_s, aux_carro->data_s)){
+            *lista_carros = carro;
+            carro->prox = aux_ant;
     }else{
-        aux_ant = *lista_carros;
         aux_pos = (*lista_carros)->prox;
         while(aux_pos != NULL){
             if(horaMaior(aux_pos->data_s, aux_carro->data_s)){
@@ -700,7 +769,7 @@ void criaListaOrd(Carro *aux_carro,Carro **lista_carros){
                 aux_pos = aux_pos->prox;
             }
         }
-        if(aux_pos == NULL){
+        if(aux_pos == NULL){    
             if(horaMaior(aux_ant->data_s, aux_carro->data_s)){
                 *lista_carros = carro;
                 carro->prox = aux_ant;
@@ -762,7 +831,7 @@ void mustrarFaturaCarros(char nome_par[BUFSIZ], Data data){
             }
             aux_carro = aux_carro->prox;
         }
-        if (lista_carros != NULL) { 
+        if (lista_carros != NULL) {
             mustraAlista(lista_carros); 
             darFreeListaOrd(lista_carros); 
         }
@@ -867,10 +936,14 @@ void removeParque(Parque *parque){
     da printf da lista de parques existentes por ordem de colucacao
 */
 void mustrarParques2(){
-    Parque *aux = lista_parques;
-    while (aux != NULL) {
-        printf("%s\n", aux->nome);
-        aux = aux->prox;
+    Parque *aux, *lista_ord = NULL;
+
+    criaListaOrdParques(&lista_ord);
+    while (lista_ord != NULL) {
+        printf("%s\n", lista_ord->nome);
+        aux = lista_ord;
+        lista_ord = lista_ord->prox;
+        free(aux);
     }
 }
 
@@ -895,8 +968,8 @@ void leArgumentosRemove(){
         printf("%s%s\n", nome_par,  ERROPARQUENAOEXISTE);
     } else {
         removeParque(aux);
+        mustrarParques2();
     }
-    mustrarParques2();
 }
 
 /**
