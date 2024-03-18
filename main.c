@@ -61,7 +61,6 @@ typedef struct Parque{
     struct Parque *prox; // ponteiro para o proximo parque
 } Parque;
 
-int num_parques = 0; // numero de parques criados
 int dias_mes[13] = {0 ,31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 Data ult_data; // ultima data usada
 
@@ -117,7 +116,7 @@ void mustrarParques(Parque *lista_parques){
     @param lista_parques vetor para a lista dos parques
     @return inteiro 1 caso verifique, 0 caso falhe
  */
-int verificaParque(char nome[BUFSIZ], int cap, float val_15, float val_1h, float val_max, Parque *lista_parques){
+int verificaParque(char nome[BUFSIZ], int cap, float val_15, float val_1h, float val_max, Parque *lista_parques, int num){
     if(parqueExiste(nome, lista_parques) != NULL){
         printf("%s%s\n", nome, ERROPARQUEEXISTE);
         return FALSE;
@@ -130,7 +129,7 @@ int verificaParque(char nome[BUFSIZ], int cap, float val_15, float val_1h, float
         printf("%s\n", ERROVALOR);
         return FALSE;
     }
-    if (num_parques >= MAXPARQUES) {
+    if (num >= MAXPARQUES) {
         printf("%s\n", ERROPARQUES);
         return FALSE;
     }
@@ -147,12 +146,12 @@ int verificaParque(char nome[BUFSIZ], int cap, float val_15, float val_1h, float
     @param lista_parques vetor para a lista dos parques
     @param val_15 valores a pagar pelo parque
  */
-void criaParque(char nome[BUFSIZ], int cap, float val_15, float val_1h, float val_max, Parque **lista_parques){
+void criaParque(char nome[BUFSIZ], int cap, float val_15, float val_1h, float val_max, Parque **lista_parques, int num){
     int verifica;
     char *nome_novo;
     Parque *parque_novo = (Parque *) malloc(sizeof(Parque)), *aux;
 
-    verifica = verificaParque(nome,cap,val_15,val_1h,val_max, *lista_parques);
+    verifica = verificaParque(nome,cap,val_15,val_1h,val_max, *lista_parques, num);
     nome_novo = criaNome(nome);
     if (verifica) {
         parque_novo->nome = nome_novo;
@@ -176,7 +175,6 @@ void criaParque(char nome[BUFSIZ], int cap, float val_15, float val_1h, float va
             }
             aux->prox = parque_novo;
         }
-        num_parques++;
     } else {
         free(parque_novo);
     }
@@ -185,7 +183,7 @@ void criaParque(char nome[BUFSIZ], int cap, float val_15, float val_1h, float va
 /**
     Le o input do utilizador para o comando p
 */
-void leArgumentosParque(Parque **lista_parques){
+void leArgumentosParque(Parque **lista_parques, int *num_parques){
     char nome[BUFSIZ], c;
     int cap;
     float val_15, val_1h, val_max;
@@ -200,7 +198,8 @@ void leArgumentosParque(Parque **lista_parques){
             ungetc(c, stdin);
             scanf("%s%d%f%f%f", nome, &cap, &val_15, &val_1h, &val_max);
         }
-        criaParque(nome, cap, val_15, val_1h, val_max, lista_parques);
+        criaParque(nome, cap, val_15, val_1h, val_max, lista_parques, *num_parques);
+        (*num_parques)++;
     }else{
         mustrarParques(*lista_parques);
     }
@@ -933,7 +932,6 @@ void removeParque(Parque *parque, Parque **lista_parques){
     removeListas(parque);
     free(parque->nome);
     free(parque);
-    num_parques--;
 }
 
 /**
@@ -954,7 +952,7 @@ void mustrarParques2(Parque *lista_parques){
 /**
     le o nome do parque a remover
 */
-void leArgumentosRemove(Parque **lista_parques){
+void leArgumentosRemove(Parque **lista_parques, int *num_parques){
     char c, nome_par[BUFSIZ];
     Parque *aux;
 
@@ -972,6 +970,7 @@ void leArgumentosRemove(Parque **lista_parques){
         printf("%s%s\n", nome_par,  ERROPARQUENAOEXISTE);
     } else {
         removeParque(aux, lista_parques);
+        (*num_parques)--;
         mustrarParques2(*lista_parques);
     }
 }
@@ -996,13 +995,14 @@ void limparTudo(Parque *lista_parques){
 */
 int main(){
     Parque *lista_parques = NULL; // ponteir para lista de parques
+    int num_parques = 0; // numero de parques criados
     char c;
     ult_data.ano = 0;
 
     while ((c = getchar()) != 'q'){
         switch(c){
             case 'p':
-            leArgumentosParque(&lista_parques);
+            leArgumentosParque(&lista_parques, &num_parques);
             break;
             case 'e':
             leArgumentosEntrada(lista_parques);
@@ -1017,7 +1017,7 @@ int main(){
             leArgumentosFaturacao(lista_parques);
             break;
             case 'r':
-            leArgumentosRemove(&lista_parques);
+            leArgumentosRemove(&lista_parques, &num_parques);
             break;
         }
     }
