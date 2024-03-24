@@ -1,11 +1,6 @@
 #ifndef DATA_H
 #define DATA_H
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <ctype.h>
-#include <string.h>
-
 #define FALSE 0
 #define TRUE 1
 
