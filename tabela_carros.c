@@ -9,9 +9,6 @@
 
 static PonteiroCarro **cabeca;
 
-/**
-    Inicializa a tabela de carros
-*/
 void inicializaTabelaCarros() {
     cabeca = (PonteiroCarro **)malloc(sizeof(PonteiroCarro*) * TAMANHO);
     int i;
@@ -38,10 +35,6 @@ int geraIndiceCarro(char matricula[9]) {
     return indice/2;
 }
 
-/**
-    insere um carro na tabela de carros
-    @param carro o carro a inserir
-*/
 void insereCarro(Carro *carro) {
     int indice = geraIndiceCarro(carro->matricula);
     PonteiroCarro *novo = (PonteiroCarro *)malloc(sizeof(PonteiroCarro));
@@ -50,11 +43,6 @@ void insereCarro(Carro *carro) {
     cabeca[indice] = novo;
 }
 
-/**
-    procura um carro na tabela de carros
-    @param matricula a matricula do carro a procurar
-    @return o carro com a matricula dada
-*/
 Carro* procuraCarro(char matricula[9]) {
     int indice = geraIndiceCarro(matricula);
     PonteiroCarro *atual = cabeca[indice];
@@ -67,10 +55,6 @@ Carro* procuraCarro(char matricula[9]) {
     return NULL;
 }
 
-/**
-    remove um carro da tabela de carros
-    @param matricula a matricula do carro a remover
-*/
 void removeCarro(char matricula[9]) {
     int indice = geraIndiceCarro(matricula);
     PonteiroCarro *atual = cabeca[indice];
@@ -90,9 +74,6 @@ void removeCarro(char matricula[9]) {
     }
 }
 
-/**
-    liberta a memoria alocada para a tabela de carros
-*/
 void libertaTabelaCarros() {
     PonteiroCarro *atual;
     PonteiroCarro *temp;

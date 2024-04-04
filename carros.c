@@ -41,14 +41,6 @@ int matriculaValida(char matricula[9]){
     else return FALSE;
 }
 
-/**
-    verifica se pode adicionar o carro
-    @param nome_par nome do parque
-    @param matricula do carro
-    @param data a data de entrada
-    @param lista_parques ponteiro para a lista dos parques
-    @return inteiro TRUE caso passe nos criterios ou FALSE caso nao passe
-*/
 int podeAdicionarCarro(char nome_par[BUFSIZ], char matricula[9], Data data, Parque *lista_parques){
     Parque *aux = lista_parques;
 
@@ -77,12 +69,6 @@ int podeAdicionarCarro(char nome_par[BUFSIZ], char matricula[9], Data data, Parq
     return TRUE;
 }
 
-/**
-    adiciona um carro ah lista de carros do parque
-    @param nome_par nome do parque
-    @param matricula do carro
-    @param data a data de entrada
-*/
 void adicionaListaCarros(char nome_par[BUFSIZ], char matricula[9], Data data, Parque *lista_parques){
     Parque *aux = lista_parques;
     Carro *carro_novo = (Carro*)malloc(sizeof(Carro));
@@ -109,14 +95,6 @@ void adicionaListaCarros(char nome_par[BUFSIZ], char matricula[9], Data data, Pa
     insereCarro(carro_novo);
 }
 
-/**
-    verifica se pode adicionar o carro
-    @param nome_par nome do parque
-    @param matricula do carro
-    @param data a data de entrada
-    @param lista_parques ponteiro para a lista dos parques
-    @return ponteiro para o carro ou NULL caso não exista
-*/
 Carro* podeRegistarSaida(char nome_par[BUFSIZ], char matricula[9], Data data, Parque *lista_parques){
     Parque *aux;
     Carro* carro;
@@ -208,14 +186,6 @@ void adicionaHistorico(Parque *aux, Data data, float valor){
     }
 }
 
-/**
-    Regista a saida do carro pondo a data de saida e valor pago
-    @param carro ponteiro para o carro
-    @param data a data de saida
-    @param lista_parques ponteiro para a lista dos parques
-    @param nome_par nome do parque
-    @param data a data de saida
-*/
 void RegistaSaida(Carro *carro, Data data, Parque *lista_parques, char nome_par[BUFSIZ]){
     Parque *aux = lista_parques;
     float valor_pago;
@@ -276,10 +246,6 @@ int procuraEMostraCarro(char matricula[9], Parque *lista_parques){
     return i;
 }
 
-/**
-    da printf da lista de carros existentes por ordem de parque e de entrada
-    @param lista_parques ponteiro para a lista dos parques
-*/
 void mostrarCarro(Parque *lista_parques){
     char matricula[9];
 
@@ -371,11 +337,6 @@ void darFreeListaOrd(Carro *lista_carros){
     }
 }
 
-/**
-    guia para a funcao mostrarFaturaCarros caso não de erro
-    @param matricula do carro
-    @param data a data a consultar
-*/
 void mostrarFaturaCarros(char nome_par[BUFSIZ], Data data, Parque *lista_parques){
     Parque *aux = lista_parques;
     Carro *aux_carro = NULL, *lista_carros = NULL;

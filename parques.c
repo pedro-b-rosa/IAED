@@ -17,12 +17,6 @@ char* criaNome(char vetor[BUFSIZ]) {
     return vetor_novo;
 }
 
-/**
-    procura se o parque existe
-    @param vetor do nome para ser transformado
-    @param lista_parques ponteiro para a lista dos parques
-    @return ponteiro para o parque ou NULL caso não exista
-*/
 Parque* parqueExiste(char nome[BUFSIZ], Parque *lista_parques){
     Parque *aux = lista_parques;
 
@@ -36,10 +30,6 @@ Parque* parqueExiste(char nome[BUFSIZ], Parque *lista_parques){
     return NULL;
 }
 
-/**
-    @param lista_parques ponteiro para a lista dos parques
-    da printf da lista de parques existentes por ordem de colucacao
-*/
 void mostrarParques(Parque *lista_parques){
     Parque *aux = lista_parques;
     while (aux != NULL) {
@@ -94,6 +84,15 @@ int verificaParque(char nome[BUFSIZ], int cap, float val_15, float val_1h, float
     return TRUE;
 }
 
+/**
+    coloca o parque na lista
+    @param lista_parques ponteiro para a lista dos parques
+    @param nome_novo ponteiro para o nome
+    @param cap capacidade do parque
+    @param val_15 valores a pagar pelo parque na primeira hora
+    @param val_1h valores a pagar pelo parque depois da primeira hora
+    @param val_max valore maximo diario
+*/
 void colocaParque(Parque **lista_parques, char *nome_novo, int cap, float val_15, float val_1h, float val_max){
     Parque *parque_novo = (Parque *) malloc(sizeof(Parque)), *aux;
 
@@ -120,16 +119,6 @@ void colocaParque(Parque **lista_parques, char *nome_novo, int cap, float val_15
     }
 }
 
-/**
-    Cria um parque e coloca-o na lista.
-    @param nome vetor com os caracteres do nome
-    @param cap capacidade do parque
-    @param val_15 valores a pagar pelo parque na primeira hora
-    @param val_1h valores a pagar pelo parque depois da primeira hora
-    @param val_max valore maximo diario
-    @param lista_parques ponteiro para a lista dos parques
-    @param val_15 valores a pagar pelo parque
- */
 void criaParque(char nome[BUFSIZ], int cap, float val_15, float val_1h, float val_max, Parque **lista_parques, int *num){
     int verifica;
     char *nome_novo;
@@ -142,10 +131,6 @@ void criaParque(char nome[BUFSIZ], int cap, float val_15, float val_1h, float va
     }
 }
 
-/**
-    remove as listas ligadas ao parque
-    @param parque ponteiro para o parque a eliminar
-*/
 void removeListas(Parque *parque){
     Carro *aux_carro_ant = parque->carros, *aux_carro_pos = parque->carros;
     Historico *auxHis_ant = parque->historico, *auxHis_pos = parque->historico;
@@ -163,10 +148,6 @@ void removeListas(Parque *parque){
     }
 }
 
-/**
-    remove o parque
-    @param parque ponteiro para o parque a eliminar
-*/
 void removeParque(Parque *parque, Parque **lista_parques, int *num_parques){
     Parque *aux = *lista_parques, *aux_ant = *lista_parques;
 
@@ -237,11 +218,6 @@ void colocaParqueOrd(Parque **lista_ord, Parque *parque){
     }
 }
 
-/**
-    coloca o parque na lista de parques por ordem alfabetica
-    @param lista_ord vetor para lista de parques
-    @param lista_parques ponteiro para a lista dos parques
-*/
 void criaListaOrdParques(Parque **lista_ord, Parque *lista_parques){
     Parque *aux = lista_parques;
     while (aux != NULL){
@@ -250,9 +226,6 @@ void criaListaOrdParques(Parque **lista_ord, Parque *lista_parques){
     }
 }
 
-/**
-    da printf da lista de parques existentes por ordem de colucacao
-*/
 void mostrarParques2(Parque *lista_parques){
     Parque *aux, *lista_ord = NULL;
 

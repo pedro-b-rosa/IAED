@@ -8,10 +8,6 @@
 static int dias_mes[13] = {0 ,31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 static Data ult_data; // ultima data usada
 
-/**
-    Atualiza a ultima data usada
-    @param data a data de entrada
-*/
 void atualizarData(Data data){
     ult_data.minuto = data.minuto;
     ult_data.hora = data.hora;
@@ -59,11 +55,6 @@ int dataMaior(Data data){
     return TRUE;
 }
 
-/**
-    verifica se a data e valida
-    @param data a data de entrada
-    @return inteiro TRUE caso passe nos criterios ou FALSE caso nao passe
-*/
 int dataValida(Data data){
     if (dataPossivel(data))
         return dataMaior(data);
@@ -71,12 +62,6 @@ int dataValida(Data data){
         return FALSE;
 }
 
-/**
-    Calcula o numero de minutos entre duas datas
-    @param d_e a data de entrada
-    @param d_s a data de saida
-    @return o numero de minutos entre as duas datas
-*/
 long int minutosEntreDatas(Data d_e, Data d_s){
     long int t = 0, conta = 0;
 
@@ -98,13 +83,6 @@ long int minutosEntreDatas(Data d_e, Data d_s){
     return t;
 }
 
-/**
-    verifica se a data de d1 é igual a de d2
-    @param d1 data 1
-    @param d2 data 2
-    @return inteiro TRUE caso a data de d1 seja igual a de d2 
-    ou FALSE caso contrario
-*/
 int dataIgual(Data d1, Data d2){
     if(d1.ano == d2.ano && d1.mes == d2.mes && d1.dia == d2.dia)
         return TRUE;
@@ -112,12 +90,6 @@ int dataIgual(Data d1, Data d2){
         return FALSE;
 }
 
-/**
-    verifica se a data é anterior a ultima data usada
-    @param data a data de entrada
-    @return inteiro TRUE caso a data de d1 seja maior que a de d2 
-    ou FALSE caso contrario
-*/
 int validarDataAnterior(Data data){
     if (dataPossivel(data))
         return !(dataMaior(data));
@@ -125,13 +97,6 @@ int validarDataAnterior(Data data){
         return FALSE;
 }
 
-/**
-    verifica se a hora de d1 é maior que a de d2
-    @param d1 data 1
-    @param d2 data 2
-    @return inteiro TRUE caso a hora de d1 seja maior que a de d2 
-    ou FALSE caso contrario
-*/
 int horaMaior(Data d1, Data d2){
     if(d1.hora > d2.hora)
         return TRUE;
